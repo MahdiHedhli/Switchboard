@@ -1,0 +1,63 @@
+{
+  "id": "threatpedia",
+  "name": "Threatpedia",
+  "description": "Public encyclopedia plus private working substrate.",
+  "repos": [
+    {
+      "id": "public",
+      "path": "github.com/MahdiHedhli/threatpedia",
+      "visibility": "public",
+      "role": "publish"
+    },
+    {
+      "id": "private",
+      "path": "github.com/MahdiHedhli/threatpedia-working",
+      "visibility": "private",
+      "role": "working"
+    }
+  ],
+  "roles": [
+    {
+      "id": "kernel-proxy",
+      "name": "Kernel Proxy",
+      "provider": "openai",
+      "defaultModelId": "codex",
+      "responsibilities": [
+        "task routing",
+        "project coordination",
+        "handoff preparation"
+      ],
+      "canWrite": true,
+      "canReview": true,
+      "canApprove": false
+    },
+    {
+      "id": "dangermouse",
+      "name": "DangerMouse",
+      "provider": "anthropic",
+      "defaultModelId": "claude-code",
+      "responsibilities": [
+        "implementation",
+        "spec work",
+        "normalization"
+      ],
+      "canWrite": true,
+      "canReview": true,
+      "canApprove": false
+    },
+    {
+      "id": "penfold",
+      "name": "Penfold",
+      "provider": "google",
+      "defaultModelId": "gemini-cli",
+      "responsibilities": [
+        "editorial review",
+        "architecture review",
+        "source synthesis"
+      ],
+      "canWrite": true,
+      "canReview": true,
+      "canApprove": false
+    }
+  ]
+}
