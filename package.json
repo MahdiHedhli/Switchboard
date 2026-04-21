@@ -1,0 +1,19 @@
+{
+  "name": "switchboard",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:broker": "npm --workspace @switchboard/broker run dev",
+    "dev:ui": "npm --workspace @switchboard/ui run dev",
+    "build": "npm run -ws build",
+    "typecheck": "npm run -ws typecheck"
+  }
+}
