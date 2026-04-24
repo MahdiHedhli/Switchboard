@@ -1,0 +1,39 @@
+{
+  "id": "fixture-duplicate-role",
+  "name": "Fixture Duplicate Role",
+  "description": "Invalid profile fixture with duplicate role ids.",
+  "repos": [
+    {
+      "id": "main",
+      "path": "example.com/private/repo",
+      "visibility": "private",
+      "role": "working"
+    }
+  ],
+  "roles": [
+    {
+      "id": "operator",
+      "name": "Operator",
+      "provider": "openai",
+      "defaultModelId": "codex",
+      "responsibilities": [
+        "routing"
+      ],
+      "canWrite": true,
+      "canReview": true,
+      "canApprove": false
+    },
+    {
+      "id": "operator",
+      "name": "Reviewer",
+      "provider": "google",
+      "defaultModelId": "gemini-cli",
+      "responsibilities": [
+        "review"
+      ],
+      "canWrite": false,
+      "canReview": true,
+      "canApprove": true
+    }
+  ]
+}

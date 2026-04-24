@@ -1,0 +1,28 @@
+{
+  "id": "fixture-unknown-profile-key",
+  "name": "Fixture Unknown Profile Key",
+  "description": "Invalid profile fixture with an unexpected top-level key.",
+  "workflow": "strict",
+  "repos": [
+    {
+      "id": "main",
+      "path": "example.com/private/repo",
+      "visibility": "private",
+      "role": "working"
+    }
+  ],
+  "roles": [
+    {
+      "id": "operator",
+      "name": "Operator",
+      "provider": "openai",
+      "defaultModelId": "codex",
+      "responsibilities": [
+        "routing"
+      ],
+      "canWrite": true,
+      "canReview": true,
+      "canApprove": false
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "fixture-duplicate-profile",
+  "name": "Fixture Duplicate Profile A",
+  "description": "Invalid fixture set with duplicate profile ids.",
+  "repos": [
+    {
+      "id": "main",
+      "path": "example.com/private/repo-a",
+      "visibility": "private",
+      "role": "working"
+    }
+  ],
+  "roles": [
+    {
+      "id": "operator-a",
+      "name": "Operator A",
+      "provider": "openai",
+      "defaultModelId": "codex",
+      "responsibilities": [
+        "routing"
+      ],
+      "canWrite": true,
+      "canReview": true,
+      "canApprove": false
+    }
+  ]
+}

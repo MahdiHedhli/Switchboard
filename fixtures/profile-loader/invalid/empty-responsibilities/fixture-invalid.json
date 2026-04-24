@@ -1,0 +1,25 @@
+{
+  "id": "fixture-empty-responsibilities",
+  "name": "Fixture Empty Responsibilities",
+  "description": "Invalid profile fixture with a role that has no responsibilities.",
+  "repos": [
+    {
+      "id": "main",
+      "path": "example.com/private/repo",
+      "visibility": "private",
+      "role": "working"
+    }
+  ],
+  "roles": [
+    {
+      "id": "operator",
+      "name": "Operator",
+      "provider": "openai",
+      "defaultModelId": "codex",
+      "responsibilities": [],
+      "canWrite": true,
+      "canReview": true,
+      "canApprove": false
+    }
+  ]
+}

@@ -4,11 +4,7 @@
     "rootDir": "src",
     "outDir": "dist",
     "declaration": true,
-    "declarationMap": true,
-    "baseUrl": ".",
-    "paths": {
-      "@switchboard/core": ["../../packages/core/src/index.ts"]
-    }
+    "declarationMap": true
   },
   "include": [
     "src/**/*.ts"
