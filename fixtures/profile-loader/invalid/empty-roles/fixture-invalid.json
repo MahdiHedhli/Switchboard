@@ -1,0 +1,14 @@
+{
+  "id": "fixture-empty-roles",
+  "name": "Fixture Empty Roles",
+  "description": "Invalid profile fixture with no roles.",
+  "repos": [
+    {
+      "id": "main",
+      "path": "example.com/private/repo",
+      "visibility": "private",
+      "role": "working"
+    }
+  ],
+  "roles": []
+}

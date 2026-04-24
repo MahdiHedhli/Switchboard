@@ -1,0 +1,28 @@
+{
+  "id": "fixture-unknown-repo-key",
+  "name": "Fixture Unknown Repo Key",
+  "description": "Invalid profile fixture with an unexpected repo key.",
+  "repos": [
+    {
+      "id": "main",
+      "path": "example.com/private/repo",
+      "visibility": "private",
+      "role": "working",
+      "branch": "main"
+    }
+  ],
+  "roles": [
+    {
+      "id": "operator",
+      "name": "Operator",
+      "provider": "openai",
+      "defaultModelId": "codex",
+      "responsibilities": [
+        "routing"
+      ],
+      "canWrite": true,
+      "canReview": true,
+      "canApprove": false
+    }
+  ]
+}
