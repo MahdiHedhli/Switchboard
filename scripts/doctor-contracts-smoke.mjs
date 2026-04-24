@@ -1314,9 +1314,9 @@ process.stdout.write(JSON.stringify(payloads[scenario] ?? payloads['app-server']
     assert.equal(localMissingTokenOperator.summary.operatorTokenConfigured, false);
     assert.equal(localMissingTokenOperator.summary.operatorTokenSource, 'unset');
     assert.deepEqual(localMissingTokenOperator.summary.scopes, {
-      taskCreate: 'open',
-      taskUpdate: 'open',
-      subscriptionRefresh: 'open',
+      taskCreate: 'disabled',
+      taskUpdate: 'disabled',
+      subscriptionRefresh: 'disabled',
       subscriptionReplace: 'disabled',
     });
 
@@ -2836,9 +2836,9 @@ process.stdout.write(JSON.stringify(payloads[scenario] ?? payloads['app-server']
       failureCodes: ['operator_readiness_failed'],
       advisoryCodes: [],
       scopes: {
-        taskCreate: 'open',
-        taskUpdate: 'open',
-        subscriptionRefresh: 'open',
+        taskCreate: 'disabled',
+        taskUpdate: 'disabled',
+        subscriptionRefresh: 'disabled',
         subscriptionReplace: 'disabled',
       },
       problems: [

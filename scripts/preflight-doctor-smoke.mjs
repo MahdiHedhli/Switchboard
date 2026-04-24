@@ -541,9 +541,9 @@ process.stdout.write(JSON.stringify(payloads[scenario] ?? payloads['app-server']
     );
     assert.match(localMissingToken.stdout, /operatorTokenConfigured: no/);
     assert.match(localMissingToken.stdout, /operatorTokenSource: unset/);
-    assert.match(localMissingToken.stdout, /taskCreate: open/);
-    assert.match(localMissingToken.stdout, /taskUpdate: open/);
-    assert.match(localMissingToken.stdout, /subscriptionRefresh: open/);
+    assert.match(localMissingToken.stdout, /taskCreate: disabled/);
+    assert.match(localMissingToken.stdout, /taskUpdate: disabled/);
+    assert.match(localMissingToken.stdout, /subscriptionRefresh: disabled/);
     assert.match(
       localMissingToken.stdout,
       /preflight summary: blocked; operator=Local-only mode should set SWITCHBOARD_OPERATOR_TOKEN\.; provider readiness=trusted_command_ready \(unvalidated\); provider sync=login fallback: app-server unavailable \(advisory\) \[quota informational_only, typed 0\/1\]; raw Codex status=app-server unavailable \[rate-limits none\]; wrapper status=login fallback \(app-server unavailable\) \[quota informational_only, typed 0\/1\]/,
@@ -571,9 +571,9 @@ process.stdout.write(JSON.stringify(payloads[scenario] ?? payloads['app-server']
     assert.equal(localMissingTokenPayload.checkDetails.operator.operatorTokenConfigured, false);
     assert.equal(localMissingTokenPayload.checkDetails.operator.operatorTokenSource, 'unset');
     assert.deepEqual(localMissingTokenPayload.checkDetails.operator.scopes, {
-      taskCreate: 'open',
-      taskUpdate: 'open',
-      subscriptionRefresh: 'open',
+      taskCreate: 'disabled',
+      taskUpdate: 'disabled',
+      subscriptionRefresh: 'disabled',
       subscriptionReplace: 'disabled',
     });
 
@@ -3399,9 +3399,9 @@ process.stdout.write(JSON.stringify(payloads[scenario] ?? payloads['app-server']
       failureCodes: ['operator_readiness_failed'],
       advisoryCodes: [],
       scopes: {
-        taskCreate: 'open',
-        taskUpdate: 'open',
-        subscriptionRefresh: 'open',
+        taskCreate: 'disabled',
+        taskUpdate: 'disabled',
+        subscriptionRefresh: 'disabled',
         subscriptionReplace: 'disabled',
       },
       problems: [
@@ -3440,9 +3440,9 @@ process.stdout.write(JSON.stringify(payloads[scenario] ?? payloads['app-server']
       /operatorTokenProblem: Set either SWITCHBOARD_OPERATOR_TOKEN or SWITCHBOARD_OPERATOR_TOKEN_FILE, not both\./,
     );
     assert.match(operatorTokenConflict.stdout, /operatorTokenConfigured: no/);
-    assert.match(operatorTokenConflict.stdout, /taskCreate: open/);
-    assert.match(operatorTokenConflict.stdout, /taskUpdate: open/);
-    assert.match(operatorTokenConflict.stdout, /subscriptionRefresh: open/);
+    assert.match(operatorTokenConflict.stdout, /taskCreate: disabled/);
+    assert.match(operatorTokenConflict.stdout, /taskUpdate: disabled/);
+    assert.match(operatorTokenConflict.stdout, /subscriptionRefresh: disabled/);
     assert.match(
       operatorTokenConflict.stdout,
       /preflight summary: blocked; operator=Set either SWITCHBOARD_OPERATOR_TOKEN or SWITCHBOARD_OPERATOR_TOKEN_FILE, not both\./,
@@ -3469,9 +3469,9 @@ process.stdout.write(JSON.stringify(payloads[scenario] ?? payloads['app-server']
     assert.equal(operatorTokenConflictPayload.checkDetails.operator.operatorTokenSource, 'env');
     assert.equal(operatorTokenConflictPayload.checkDetails.operator.operatorTokenFile, 'fake-openai-sync.mjs');
     assert.deepEqual(operatorTokenConflictPayload.checkDetails.operator.scopes, {
-      taskCreate: 'open',
-      taskUpdate: 'open',
-      subscriptionRefresh: 'open',
+      taskCreate: 'disabled',
+      taskUpdate: 'disabled',
+      subscriptionRefresh: 'disabled',
       subscriptionReplace: 'disabled',
     });
 
@@ -3503,9 +3503,9 @@ process.stdout.write(JSON.stringify(payloads[scenario] ?? payloads['app-server']
       /operatorTokenProblem: Parent directory for SWITCHBOARD_OPERATOR_TOKEN_FILE must not be accessible by group or others\. Use chmod 700\./,
     );
     assert.match(operatorDefaultDirInsecure.stdout, /operatorTokenConfigured: no/);
-    assert.match(operatorDefaultDirInsecure.stdout, /taskCreate: open/);
-    assert.match(operatorDefaultDirInsecure.stdout, /taskUpdate: open/);
-    assert.match(operatorDefaultDirInsecure.stdout, /subscriptionRefresh: open/);
+    assert.match(operatorDefaultDirInsecure.stdout, /taskCreate: disabled/);
+    assert.match(operatorDefaultDirInsecure.stdout, /taskUpdate: disabled/);
+    assert.match(operatorDefaultDirInsecure.stdout, /subscriptionRefresh: disabled/);
     assert.match(
       operatorDefaultDirInsecure.stdout,
       /preflight summary: blocked; operator=Parent directory for SWITCHBOARD_OPERATOR_TOKEN_FILE must not be accessible by group or others\. Use chmod 700\./,
@@ -3531,9 +3531,9 @@ process.stdout.write(JSON.stringify(payloads[scenario] ?? payloads['app-server']
     assert.equal(operatorDefaultDirInsecurePayload.checkDetails.operator.operatorTokenSource, 'file');
     assert.equal(operatorDefaultDirInsecurePayload.checkDetails.operator.operatorTokenFile, 'operator-token');
     assert.deepEqual(operatorDefaultDirInsecurePayload.checkDetails.operator.scopes, {
-      taskCreate: 'open',
-      taskUpdate: 'open',
-      subscriptionRefresh: 'open',
+      taskCreate: 'disabled',
+      taskUpdate: 'disabled',
+      subscriptionRefresh: 'disabled',
       subscriptionReplace: 'disabled',
     });
 

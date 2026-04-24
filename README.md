@@ -206,8 +206,8 @@ A Codex handoff brief is included in `docs/CODEX-HANDOFF.md`.
 - that higher-level preflight coverage now explicitly includes the healthy strict typed paths too: local env-token shells, local file-backed operator-token shells, and remote file-backed operator-token shells now all keep `checkDetails.provider_sync` aligned with the top-level preferred-provider summary for `provider`, `state`, `kind`, `configured`, `secure`, `codes`, `message`, `source`, `refreshedAt`, `syncMethods`, `accountCount`, `syncModes`, `syncBadges`, `rateLimitHosts`, and `openaiAuth`, not just the mixed or degraded branches.
 - the human `doctor:operator` and `doctor:preflight` operator sections now also show `operatorTokenSource`, the token-file basename when available, and any sanitized `operatorTokenProblem`, so shell-side token wiring drift is easier to distinguish from the browser-only UI token cache.
 - healthy local-only shells now also keep that token-file detail visible when they use `SWITCHBOARD_OPERATOR_TOKEN_FILE`: the direct and preflight operator surfaces stay `ready`, preserve `operatorTokenSource: file`, show basename-only `operatorTokenFile: operator-token`, and keep the same `local-only; host=127.0.0.1` summary text as the env-token baseline.
-- conflicting `SWITCHBOARD_OPERATOR_TOKEN` plus `SWITCHBOARD_OPERATOR_TOKEN_FILE` wiring now also surfaces as an explicit fail-closed operator state in both direct and preflight doctor output: `operatorTokenSource` stays visible, but `operatorTokenConfigured` drops to `no` and mutation scopes fall back to `open` until the conflict is resolved.
-- local-only shells with neither `SWITCHBOARD_OPERATOR_TOKEN` nor `SWITCHBOARD_OPERATOR_TOKEN_FILE` now also surface as an explicit fail-closed operator state in both direct and preflight doctor output: the operator `message:` becomes `Local-only mode should set SWITCHBOARD_OPERATOR_TOKEN.`, `operatorTokenSource` reports `unset`, `operatorTokenConfigured` stays `no`, and mutation scopes remain `open` until a shell token env or token file is configured.
+- conflicting `SWITCHBOARD_OPERATOR_TOKEN` plus `SWITCHBOARD_OPERATOR_TOKEN_FILE` wiring now also surfaces as an explicit fail-closed operator state in both direct and preflight doctor output: `operatorTokenSource` stays visible, but `operatorTokenConfigured` drops to `no` and routine mutation scopes stay disabled until the conflict is resolved.
+- local-only shells with neither `SWITCHBOARD_OPERATOR_TOKEN` nor `SWITCHBOARD_OPERATOR_TOKEN_FILE` now also surface as an explicit fail-closed operator state in both direct and preflight doctor output: the operator `message:` becomes `Local-only mode should set SWITCHBOARD_OPERATOR_TOKEN.`, `operatorTokenSource` reports `unset`, `operatorTokenConfigured` stays `no`, and routine mutation scopes remain disabled unless the explicit dev-only `SWITCHBOARD_ALLOW_OPEN_LOOPBACK_MUTATIONS=1` escape hatch is set.
 - planner warnings now also carry structured provider-sync detail, and the dashboard warning cards surface the same provider, mode, host, auth, and snapshot-backed sync-source hints instead of relying only on long prose warnings.
 - provider refresh responses now also carry structured degraded-sync detail, so a successful-but-degraded OpenAI/Codex refresh can surface the same badge and host/auth hints in the operator UI instead of only reporting refreshed account counts.
 - provider refresh messages now also use the same shared formatting contract as the live provider-sync doctor, so healthy `app-server rate-limits available`, snapshot-backed refresh, and degraded Codex/OpenAI badges do not drift between the operator UI and the doctor tooling.
@@ -250,12 +250,12 @@ export SWITCHBOARD_OPENAI_REFRESH_COMMAND_JSON='["node","/absolute/path/to/opena
 Codex-first local setup:
 
 ```bash
-export SWITCHBOARD_OPENAI_REFRESH_COMMAND_JSON='["node","/Users/mhedhli/Documents/Coding/Switchboard/scripts/provider-sync/openai-codex-sync.mjs"]'
+export SWITCHBOARD_OPENAI_REFRESH_COMMAND_JSON="[\"node\",\"$PWD/scripts/provider-sync/openai-codex-sync.mjs\"]"
 ```
 
 The command must:
 - run locally without shell expansion
-- emit sanitized JSON to stdout using the schema in [docs/QUOTA-SNAPSHOT-SCHEMA.md](/Users/mhedhli/Documents/Coding/Switchboard/docs/QUOTA-SNAPSHOT-SCHEMA.md)
+- emit sanitized JSON to stdout using the schema in [docs/QUOTA-SNAPSHOT-SCHEMA.md](docs/QUOTA-SNAPSHOT-SCHEMA.md)
 - keep raw OAuth tokens, cookies, or provider exports out of stdout and out of broker state
 
 The current Codex wrapper now prefers the local Codex app-server rate-limit surface. When available, it reports:
@@ -270,7 +270,8 @@ When refresh succeeds through this path, persisted subscription records are mark
 ## Broker auth policy
 
 Mutation routes follow a narrow default policy:
-- loopback-only brokers may keep task creation, task updates, and adapter refresh open unless an operator token is configured
+- task creation, task updates, and adapter refresh require an operator token by default, including on loopback
+- disposable local development can opt into open loopback mutations with `SWITCHBOARD_ALLOW_OPEN_LOOPBACK_MUTATIONS=1`
 - `SWITCHBOARD_OPERATOR_TOKEN` or `SWITCHBOARD_OPERATOR_TOKEN_FILE` turns those mutation routes into token-gated operations
 - non-local broker exposure disables mutation routes until a token is configured and direct TLS is present
 - `PUT /v1/projects/:id/subscriptions` stays disabled by default unless `SWITCHBOARD_ENABLE_MANUAL_SUBSCRIPTION_REPLACE=1` is set for reviewed local recovery work
@@ -282,7 +283,7 @@ npm run operator-token:save
 export SWITCHBOARD_OPERATOR_TOKEN_FILE="$HOME/.switchboard/operator-token"
 ```
 
-The UI may cache that token in the browser for local mutation flows, but shell-based `doctor:*` and `doctor:preflight` commands still read `SWITCHBOARD_OPERATOR_TOKEN` or `SWITCHBOARD_OPERATOR_TOKEN_FILE` from the shell you launch them in.
+The UI keeps that token in memory for local mutation flows unless you explicitly choose to remember it in the browser for 24 hours. Shell-based `doctor:*` and `doctor:preflight` commands still read `SWITCHBOARD_OPERATOR_TOKEN` or `SWITCHBOARD_OPERATOR_TOKEN_FILE` from the shell you launch them in.
 
 Remote-trusted HTTPS launch:
 
@@ -296,7 +297,7 @@ export SWITCHBOARD_TLS_KEY_FILE="/etc/letsencrypt/live/switchboard/privkey.pem"
 npm run dev:broker:remote-trusted
 ```
 
-Additional deployment guidance lives in [docs/DEPLOYMENT.md](/Users/mhedhli/Documents/Coding/Switchboard/docs/DEPLOYMENT.md), the operator dry-run steps live in [docs/OPERATOR-RUNBOOK.md](/Users/mhedhli/Documents/Coding/Switchboard/docs/OPERATOR-RUNBOOK.md), and the current release checklist lives in [docs/RELEASE-CHECKLIST.md](/Users/mhedhli/Documents/Coding/Switchboard/docs/RELEASE-CHECKLIST.md).
+Additional deployment guidance lives in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md), the operator dry-run steps live in [docs/OPERATOR-RUNBOOK.md](docs/OPERATOR-RUNBOOK.md), and the current release checklist lives in [docs/RELEASE-CHECKLIST.md](docs/RELEASE-CHECKLIST.md).
 
 ## License
 

@@ -356,6 +356,7 @@ export function createBrokerServer(config: BrokerRuntimeConfig): BrokerServer {
   const authPolicy = new BrokerAuthPolicy({
     host: config.host,
     operatorToken: config.operatorToken,
+    allowOpenLoopbackMutations: config.summary.allowOpenLoopbackMutations,
     manualSubscriptionReplaceEnabled: config.manualSubscriptionReplaceEnabled,
   });
 

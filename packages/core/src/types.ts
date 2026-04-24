@@ -212,6 +212,7 @@ export interface BrokerAuthSummary {
   operatorTokenSource?: BrokerOperatorTokenSource;
   operatorTokenFile?: string;
   operatorTokenProblem?: string;
+  openLoopbackMutationsEnabled?: boolean;
   manualSubscriptionReplaceEnabled: boolean;
   operatorTokenHeader: string;
   scopes: {

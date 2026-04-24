@@ -98,6 +98,7 @@ async function assertPersistedMixedOpenAiState(stateDir, taskTitle) {
   assert.deepEqual(persistedOpenAI.signals, [
     { id: 'source', label: 'source', value: 'app-server rate-limits' },
     { id: 'plan', label: 'plan', value: 'Pro' },
+    { id: 'credits', label: 'credits', value: '0' },
     { id: 'openai_auth', label: 'openai-auth', value: 'required' },
   ]);
 
@@ -179,7 +180,7 @@ async function assertPersistedTypedOpenAiState(stateDir) {
   assert.equal((stateStat.mode & 0o777), 0o600);
 
   const persisted = JSON.parse(await readFile(stateFile, 'utf8'));
-  assert.equal(persisted.tasks.length, 0);
+  assert.deepEqual(persisted.tasks.map((task) => task.id), ['TASK-0001', 'TASK-0002', 'TASK-0003']);
 
   const persistedOpenAI = persisted.subscriptions.find((account) => account.provider === 'openai');
   assertHealthyTypedOpenAiAccount(persistedOpenAI);
@@ -191,7 +192,7 @@ async function assertPersistedDegradedOpenAiState(stateDir) {
   assert.equal((stateStat.mode & 0o777), 0o600);
 
   const persisted = JSON.parse(await readFile(stateFile, 'utf8'));
-  assert.equal(persisted.tasks.length, 0);
+  assert.deepEqual(persisted.tasks.map((task) => task.id), ['TASK-0001', 'TASK-0002', 'TASK-0003']);
 
   const persistedOpenAI = persisted.subscriptions.find((account) => account.provider === 'openai');
   assert.notEqual(persistedOpenAI, undefined);
@@ -1197,6 +1198,7 @@ process.exit(1);
     assert.deepEqual(localTokenFileStateAccount.signals, [
       { id: 'source', label: 'source', value: 'app-server rate-limits' },
       { id: 'plan', label: 'plan', value: 'Pro' },
+      { id: 'credits', label: 'credits', value: '0' },
       { id: 'openai_auth', label: 'openai-auth', value: 'required' },
     ]);
     assert.equal(typeof localTokenFileState.updatedAt, 'string');
@@ -1412,7 +1414,7 @@ process.exit(1);
 
     const insecureDefaultTokenHealth = await fetchBroker(`${insecureDefaultTokenBroker.baseUrl}/healthz`).then((response) => response.json());
     assert.equal(insecureDefaultTokenHealth.localOnly, true);
-    assert.equal(insecureDefaultTokenHealth.operatorTokenRequired, false);
+    assert.equal(insecureDefaultTokenHealth.operatorTokenRequired, true);
     assert.equal(insecureDefaultTokenHealth.auth.operatorTokenConfigured, false);
     assert.equal(insecureDefaultTokenHealth.auth.operatorTokenSource, 'file');
     assert.equal(insecureDefaultTokenHealth.auth.operatorTokenFile, 'operator-token');
@@ -1420,9 +1422,9 @@ process.exit(1);
       insecureDefaultTokenHealth.auth.operatorTokenProblem,
       'Parent directory for SWITCHBOARD_OPERATOR_TOKEN_FILE must not be accessible by group or others. Use chmod 700.',
     );
-    assert.equal(insecureDefaultTokenHealth.auth.scopes.taskCreate.requirement, 'open');
-    assert.equal(insecureDefaultTokenHealth.auth.scopes.taskUpdate.requirement, 'open');
-    assert.equal(insecureDefaultTokenHealth.auth.scopes.subscriptionRefresh.requirement, 'open');
+    assert.equal(insecureDefaultTokenHealth.auth.scopes.taskCreate.requirement, 'disabled');
+    assert.equal(insecureDefaultTokenHealth.auth.scopes.taskUpdate.requirement, 'disabled');
+    assert.equal(insecureDefaultTokenHealth.auth.scopes.subscriptionRefresh.requirement, 'disabled');
     assert.equal(insecureDefaultTokenHealth.auth.scopes.subscriptionReplace.requirement, 'disabled');
     assertSanitizedBrokerJson(insecureDefaultTokenHealth);
 
@@ -1597,6 +1599,7 @@ process.exit(1);
     assert.deepEqual(remoteTokenFileStateAccount.signals, [
       { id: 'source', label: 'source', value: 'app-server rate-limits' },
       { id: 'plan', label: 'plan', value: 'Pro' },
+      { id: 'credits', label: 'credits', value: '0' },
       { id: 'openai_auth', label: 'openai-auth', value: 'required' },
     ]);
     assert.equal(typeof remoteTokenFileState.updatedAt, 'string');

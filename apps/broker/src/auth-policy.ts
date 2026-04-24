@@ -19,6 +19,7 @@ export interface BrokerScopePolicy extends BrokerScopeSummary {}
 interface BrokerAuthPolicyOptions {
   host: string;
   operatorToken?: string;
+  allowOpenLoopbackMutations?: boolean;
   manualSubscriptionReplaceEnabled?: boolean;
 }
 
@@ -54,6 +55,7 @@ function createScopePolicy(
   scope: BrokerMutationScope,
   localOnly: boolean,
   operatorTokenConfigured: boolean,
+  allowOpenLoopbackMutations: boolean,
   manualSubscriptionReplaceEnabled: boolean,
 ): BrokerScopePolicy {
   if (scope === 'subscriptionReplace' && !manualSubscriptionReplaceEnabled) {
@@ -72,7 +74,13 @@ function createScopePolicy(
     return operatorToken(`This route requires ${operatorTokenHeaderName}.`);
   }
 
-  return open('Allowed while the broker stays loopback-only.');
+  if (localOnly && allowOpenLoopbackMutations) {
+    return open('Allowed by SWITCHBOARD_ALLOW_OPEN_LOOPBACK_MUTATIONS=1 while the broker stays loopback-only.');
+  }
+
+  return disabled(
+    `Loopback mutation routes require ${operatorTokenHeaderName} via SWITCHBOARD_OPERATOR_TOKEN or SWITCHBOARD_OPERATOR_TOKEN_FILE. For disposable local development only, set SWITCHBOARD_ALLOW_OPEN_LOOPBACK_MUTATIONS=1.`,
+  );
 }
 
 export function isLoopbackHost(host: string): boolean {
@@ -82,36 +90,42 @@ export function isLoopbackHost(host: string): boolean {
 export class BrokerAuthPolicy {
   readonly localOnly: boolean;
   readonly operatorTokenConfigured: boolean;
+  readonly allowOpenLoopbackMutations: boolean;
   readonly manualSubscriptionReplaceEnabled: boolean;
   readonly scopes: Record<BrokerMutationScope, BrokerScopePolicy>;
 
   constructor(private readonly options: BrokerAuthPolicyOptions) {
     this.localOnly = isLoopbackHost(options.host);
     this.operatorTokenConfigured = Boolean(options.operatorToken);
+    this.allowOpenLoopbackMutations = options.allowOpenLoopbackMutations ?? false;
     this.manualSubscriptionReplaceEnabled = options.manualSubscriptionReplaceEnabled ?? false;
     this.scopes = {
       taskCreate: createScopePolicy(
         'taskCreate',
         this.localOnly,
         this.operatorTokenConfigured,
+        this.allowOpenLoopbackMutations,
         this.manualSubscriptionReplaceEnabled,
       ),
       taskUpdate: createScopePolicy(
         'taskUpdate',
         this.localOnly,
         this.operatorTokenConfigured,
+        this.allowOpenLoopbackMutations,
         this.manualSubscriptionReplaceEnabled,
       ),
       subscriptionRefresh: createScopePolicy(
         'subscriptionRefresh',
         this.localOnly,
         this.operatorTokenConfigured,
+        this.allowOpenLoopbackMutations,
         this.manualSubscriptionReplaceEnabled,
       ),
       subscriptionReplace: createScopePolicy(
         'subscriptionReplace',
         this.localOnly,
         this.operatorTokenConfigured,
+        this.allowOpenLoopbackMutations,
         this.manualSubscriptionReplaceEnabled,
       ),
     };
@@ -122,6 +136,7 @@ export class BrokerAuthPolicy {
       localOnly: this.localOnly,
       remoteExposureAllowed: !this.localOnly,
       operatorTokenConfigured: this.operatorTokenConfigured,
+      openLoopbackMutationsEnabled: this.allowOpenLoopbackMutations,
       manualSubscriptionReplaceEnabled: this.manualSubscriptionReplaceEnabled,
       operatorTokenHeader: operatorTokenHeaderName,
       scopes: this.scopes,

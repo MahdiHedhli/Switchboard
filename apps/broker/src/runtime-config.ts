@@ -31,6 +31,7 @@ export interface BrokerRuntimeSummary {
   port: number;
   localOnly: boolean;
   allowRemote: boolean;
+  allowOpenLoopbackMutations: boolean;
   manualSubscriptionReplaceEnabled: boolean;
   operatorTokenConfigured: boolean;
   operatorTokenSource: BrokerOperatorTokenSource;
@@ -240,6 +241,7 @@ export async function summarizeBrokerRuntimeEnvironment(
   const host = overrides.host ?? env.SWITCHBOARD_BROKER_HOST ?? defaultHost;
   const port = overrides.port ?? Number(env.SWITCHBOARD_BROKER_PORT ?? defaultPort);
   const allowRemote = env.SWITCHBOARD_ALLOW_REMOTE === '1';
+  const allowOpenLoopbackMutations = env.SWITCHBOARD_ALLOW_OPEN_LOOPBACK_MUTATIONS === '1';
   const manualSubscriptionReplaceEnabled = env.SWITCHBOARD_ENABLE_MANUAL_SUBSCRIPTION_REPLACE === '1';
   const directOperatorToken = trimToUndefined(overrides.operatorToken);
   const operatorToken = directOperatorToken
@@ -256,6 +258,7 @@ export async function summarizeBrokerRuntimeEnvironment(
     port,
     localOnly: isLoopbackHost(host),
     allowRemote,
+    allowOpenLoopbackMutations,
     manualSubscriptionReplaceEnabled,
     operatorTokenConfigured: operatorToken.configured,
     operatorTokenSource: operatorToken.source,

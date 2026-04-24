@@ -6,11 +6,17 @@ export function buildBrokerHealthSnapshot(
   authPolicy: BrokerAuthPolicy,
   runtime?: Pick<BrokerRuntimeSummary, 'protocol' | 'tlsEnabled' | 'operatorTokenSource' | 'operatorTokenFile' | 'operatorTokenProblem'>,
 ): BrokerHealthSnapshot {
+  const routineMutationScopes = [
+    authPolicy.scopes.taskCreate,
+    authPolicy.scopes.taskUpdate,
+    authPolicy.scopes.subscriptionRefresh,
+  ];
+
   return {
     status: 'ok',
     service: 'switchboard-broker',
     localOnly: authPolicy.localOnly,
-    operatorTokenRequired: authPolicy.operatorTokenConfigured,
+    operatorTokenRequired: routineMutationScopes.some((scope) => scope.requirement !== 'open'),
     protocol: runtime?.protocol ?? 'http',
     tlsEnabled: runtime?.tlsEnabled ?? false,
     auth: {

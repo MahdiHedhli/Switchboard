@@ -14,7 +14,7 @@
 - for healthy local-only shells that use `SWITCHBOARD_OPERATOR_TOKEN_FILE`, confirm `doctor:operator` or `doctor:preflight` still stays `ready` and shows only basename-safe token metadata such as `operatorTokenSource: file` and `operatorTokenFile: operator-token`
 - if using `npm run operator-token:save`, confirm the default `$HOME/.switchboard/operator-token` path or remote-trusted fallback is still the intended auto-hardened location
 - if using that default `$HOME/.switchboard/operator-token` path, confirm the parent `.switchboard` directory is still owner-only; broker health now surfaces a sanitized `chmod 700` warning if it drifts back to group/world-readable, and the operator/preflight doctors fail closed until it is tightened again
-- if using `npm run operator-token:save -- --file /private/path/operator-token`, confirm the custom parent directory is already private, because only the token file itself is forced to `0600`
+- if using `npm run operator-token:save -- --file /path/to/private/operator-token`, confirm the custom parent directory is already private, because only the token file itself is forced to `0600`
 - confirm direct subscription replacement is still disabled by default
 - confirm `.switchboard/` remains ignored by git
 - confirm quota snapshot files stay sanitized and use restrictive permissions
@@ -49,8 +49,8 @@
 ## Deployment readiness
 
 - confirm whether the release target is local-only or remote-trusted
-- review [docs/DEPLOYMENT.md](/Users/mhedhli/Documents/Coding/Switchboard/docs/DEPLOYMENT.md)
-- review [docs/OPERATOR-RUNBOOK.md](/Users/mhedhli/Documents/Coding/Switchboard/docs/OPERATOR-RUNBOOK.md)
+- review [docs/DEPLOYMENT.md](DEPLOYMENT.md)
+- review [docs/OPERATOR-RUNBOOK.md](OPERATOR-RUNBOOK.md)
 - verify rollback plan for the broker process, lockfile, and state snapshot inputs
 - capture any unresolved security gaps before rollout
 

@@ -44,7 +44,7 @@ These commands should be reviewed local wrappers only. They run without shell ex
 
 For the current Codex-first setup, the repo-owned wrapper lives at `scripts/provider-sync/openai-codex-sync.mjs`.
 
-See [docs/OPERATOR-RUNBOOK.md](/Users/mhedhli/Documents/Coding/Switchboard/docs/OPERATOR-RUNBOOK.md) for the full dry-run sequence.
+See [docs/OPERATOR-RUNBOOK.md](OPERATOR-RUNBOOK.md) for the full dry-run sequence.
 
 ## Remote-trusted setup
 
@@ -60,6 +60,7 @@ Minimum requirements:
 
 Without an operator token, non-local mutation routes stay disabled by policy.
 Without direct TLS material, non-local broker startup now fails closed by policy.
+Loopback mutation routes also require an operator token by default; `SWITCHBOARD_ALLOW_OPEN_LOOPBACK_MUTATIONS=1` is only for disposable local development.
 
 Recommended remote-trusted launch:
 
@@ -75,7 +76,7 @@ npm run dev:broker:remote-trusted
 
 Before rollout, run `npm run doctor:operator -- remote-trusted` to confirm the current shell actually matches the expected remote-trusted baseline.
 If `SWITCHBOARD_OPERATOR_TOKEN_FILE` is unset, `npm run dev:broker:remote-trusted` defaults it to `$HOME/.switchboard/operator-token`, which matches the output location from `npm run operator-token:save`.
-That default token-save path is the auto-hardened one. If you intentionally use `npm run operator-token:save -- --file /private/path/operator-token`, the token file still lands with `0600`, but the parent directory stays operator-managed and should already be private.
+That default token-save path is the auto-hardened one. If you intentionally use `npm run operator-token:save -- --file /path/to/private/operator-token`, the token file still lands with `0600`, but the parent directory stays operator-managed and should already be private.
 If that default `.switchboard` token directory later becomes group- or world-accessible, broker health surfaces `Parent directory for SWITCHBOARD_OPERATOR_TOKEN_FILE must not be accessible by group or others. Use chmod 700.` as a sanitized warning, and the operator plus preflight doctors fail closed until it is tightened again.
 For reviewed file-backed rollout checks here as well, `smoke:preflight` and `smoke:doctor-contracts` now explicitly cover both the healthy strict typed and healthy mixed `1/2` OpenAI provider-sync plus raw and wrapped Codex paths on the remote-trusted shell, including nested `checkDetails.provider_sync` alignment for `provider`, `state`, `kind`, `configured`, `secure`, `codes`, `message`, `source`, `refreshedAt`, `syncMethods`, `accountCount`, `syncModes`, `syncBadges`, `rateLimitHosts`, and `openaiAuth`, richer raw `userAgent` / `accountType` / `plan` / `endpoint` fields, and wrapped `account` / `refreshedAt` / `refreshedDisplay` / `plan` / `credits` fields, so the higher-level human and JSON rollout surfaces stay aligned with the broker persistence checks.
 Those higher-level human preflight provider sections now also preserve the direct provider doctor `message:` line plus nested readiness and sync detail such as readiness posture rows `source`, `configured`, `secure`, and `validated`, provider-sync wiring rows `state`, `source`, `configured`, and `secure`, and live sync detail like `accounts`, `refreshedAt`, `syncMethods`, `syncModes`, and `openaiAuth`, so remote rollout shells do not have to fall back to JSON just to see that context. Degraded-path rows like `syncBadges` and `rateLimitHosts` stay visible there when they actually carry data, and the degraded local allow-fallback plus remote strict-fail trusted-command branches now also explicitly pin the fuller degraded provider-sync shape there, including `source`, `state`, `configured`, `secure`, `accounts`, `refreshedAt`, `syncMethods`, `syncModes`, `syncBadges`, `rateLimitHosts`, `openaiAuth`, and informational-only quota rows instead of only the message plus host/auth hints. On healthy trusted-command paths, that nested human preflight provider-sync output also keeps the direct quota rows visible, including `accounts: 1`, `syncModes: app-server-rate-limits`, and typed quota detail like `quotaCoverage: typed` with fully typed `typedQuotaModels: 2/2` or mixed `1/2`; the strict healthy raw and wrapped Codex sections now also keep the secondary `GPT-5.3-Codex-Spark` bucket/model visible with typed `2/2` coverage instead of leaving that fuller healthy shape pinned only to the direct doctor or JSON rollout surfaces. The higher-level JSON surface separately keeps `checkDetails.provider_readiness.provider`, `state`, `kind`, `accountCount`, `unvalidated`, and `codes` aligned with the top-level provider-readiness summary, and keeps `lastModifiedAt` aligned when that readiness freshness field exists.

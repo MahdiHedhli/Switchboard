@@ -81,7 +81,8 @@ Current policy:
 - `SWITCHBOARD_OPERATOR_TOKEN_FILE` is the preferred mutation-token path, with `SWITCHBOARD_OPERATOR_TOKEN` still available for reviewed shell-only cases
 - healthy local-only shells using `SWITCHBOARD_OPERATOR_TOKEN_FILE` now preserve the same `ready` operator posture as env-token shells, while exposing only basename-safe token metadata such as `operatorTokenSource: file` and `operatorTokenFile: operator-token`
 - the default reviewed token-file path is `$HOME/.switchboard/operator-token`, and the save flow re-applies owner-only permissions to both that file and the default `.switchboard` directory
-- `SWITCHBOARD_OPERATOR_TOKEN` or `SWITCHBOARD_OPERATOR_TOKEN_FILE` upgrades routine mutation routes from open local access to token-gated access
+- `SWITCHBOARD_OPERATOR_TOKEN` or `SWITCHBOARD_OPERATOR_TOKEN_FILE` enables routine mutation routes through token-gated access
+- open loopback mutation access is reserved for explicit disposable development via `SWITCHBOARD_ALLOW_OPEN_LOOPBACK_MUTATIONS=1`
 - non-local mutation routes stay disabled until a token is configured
 - direct subscription replacement is disabled by default and only exists as an explicit recovery path
 - the health surface should describe the active mutation policy without exposing local filesystem paths, while still surfacing sanitized token-source and token-wiring drift such as basename-only file labels or permission failures

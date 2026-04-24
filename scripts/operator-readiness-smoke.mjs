@@ -53,6 +53,7 @@ async function summarizeEnvironment(env) {
   const policy = new BrokerAuthPolicy({
     host: summary.host,
     operatorToken: summary.operatorTokenConfigured ? 'configured-operator-token' : undefined,
+    allowOpenLoopbackMutations: summary.allowOpenLoopbackMutations,
     manualSubscriptionReplaceEnabled: summary.manualSubscriptionReplaceEnabled,
   }).summary();
 
@@ -402,9 +403,9 @@ async function exampleMatrix() {
       tlsKeyFile: undefined,
       tlsCaFile: undefined,
       scopes: {
-        taskCreate: 'open',
-        taskUpdate: 'open',
-        subscriptionRefresh: 'open',
+        taskCreate: 'disabled',
+        taskUpdate: 'disabled',
+        subscriptionRefresh: 'disabled',
         subscriptionReplace: 'disabled',
       },
     });
@@ -423,9 +424,9 @@ async function exampleMatrix() {
         '  operatorTokenConfigured: no',
         '  operatorTokenSource: unset',
         '  manualSubscriptionReplaceEnabled: no',
-        '  taskCreate: open',
-        '  taskUpdate: open',
-        '  subscriptionRefresh: open',
+        '  taskCreate: disabled',
+        '  taskUpdate: disabled',
+        '  subscriptionRefresh: disabled',
         '  subscriptionReplace: disabled',
       ],
     );
@@ -441,7 +442,7 @@ async function exampleMatrix() {
     assert.match(localMissingTokenHuman.stdout, /message: Local-only mode should set SWITCHBOARD_OPERATOR_TOKEN\./);
     assert.match(localMissingTokenHuman.stdout, /operatorTokenConfigured: no/);
     assert.match(localMissingTokenHuman.stdout, /operatorTokenSource: unset/);
-    assert.match(localMissingTokenHuman.stdout, /taskCreate: open/);
+    assert.match(localMissingTokenHuman.stdout, /taskCreate: disabled/);
     assert.match(localMissingTokenHuman.stderr, /Local-only mode should set SWITCHBOARD_OPERATOR_TOKEN\./);
 
     const localMissingTokenJson = await runCurrentDoctor(
@@ -462,9 +463,9 @@ async function exampleMatrix() {
     assert.equal(localMissingTokenJsonPayload.operatorTokenSource, 'unset');
     assert.deepEqual(localMissingTokenJsonPayload.failureCodes, ['operator_readiness_failed']);
     assert.deepEqual(localMissingTokenJsonPayload.scopes, {
-      taskCreate: 'open',
-      taskUpdate: 'open',
-      subscriptionRefresh: 'open',
+      taskCreate: 'disabled',
+      taskUpdate: 'disabled',
+      subscriptionRefresh: 'disabled',
       subscriptionReplace: 'disabled',
     });
 
@@ -563,9 +564,9 @@ async function exampleMatrix() {
       tlsKeyFile: undefined,
       tlsCaFile: undefined,
       scopes: {
-        taskCreate: 'open',
-        taskUpdate: 'open',
-        subscriptionRefresh: 'open',
+        taskCreate: 'disabled',
+        taskUpdate: 'disabled',
+        subscriptionRefresh: 'disabled',
         subscriptionReplace: 'disabled',
       },
     },
@@ -589,9 +590,9 @@ async function exampleMatrix() {
         '  operatorTokenConfigured: no',
         '  operatorTokenSource: unset',
         '  manualSubscriptionReplaceEnabled: no',
-        '  taskCreate: open',
-        '  taskUpdate: open',
-        '  subscriptionRefresh: open',
+        '  taskCreate: disabled',
+        '  taskUpdate: disabled',
+        '  subscriptionRefresh: disabled',
         '  subscriptionReplace: disabled',
       ],
     );
@@ -622,9 +623,9 @@ async function exampleMatrix() {
         '  operatorTokenFile: operator-token',
         '  operatorTokenProblem: SWITCHBOARD_OPERATOR_TOKEN_FILE must not be accessible by group or others. Use chmod 600.',
         '  manualSubscriptionReplaceEnabled: no',
-        '  taskCreate: open',
-        '  taskUpdate: open',
-        '  subscriptionRefresh: open',
+        '  taskCreate: disabled',
+        '  taskUpdate: disabled',
+        '  subscriptionRefresh: disabled',
         '  subscriptionReplace: disabled',
       ],
     );
@@ -659,9 +660,9 @@ async function exampleMatrix() {
         '  operatorTokenFile: operator-token',
         '  operatorTokenProblem: Parent directory for SWITCHBOARD_OPERATOR_TOKEN_FILE must not be accessible by group or others. Use chmod 700.',
         '  manualSubscriptionReplaceEnabled: no',
-        '  taskCreate: open',
-        '  taskUpdate: open',
-        '  subscriptionRefresh: open',
+        '  taskCreate: disabled',
+        '  taskUpdate: disabled',
+        '  subscriptionRefresh: disabled',
         '  subscriptionReplace: disabled',
       ],
     );
@@ -692,9 +693,9 @@ async function exampleMatrix() {
         '  operatorTokenFile: operator-token',
         '  operatorTokenProblem: Set either SWITCHBOARD_OPERATOR_TOKEN or SWITCHBOARD_OPERATOR_TOKEN_FILE, not both.',
         '  manualSubscriptionReplaceEnabled: no',
-        '  taskCreate: open',
-        '  taskUpdate: open',
-        '  subscriptionRefresh: open',
+        '  taskCreate: disabled',
+        '  taskUpdate: disabled',
+        '  subscriptionRefresh: disabled',
         '  subscriptionReplace: disabled',
       ],
     );
@@ -719,7 +720,7 @@ async function exampleMatrix() {
       conflictingTokensHuman.stdout,
       /operatorTokenProblem: Set either SWITCHBOARD_OPERATOR_TOKEN or SWITCHBOARD_OPERATOR_TOKEN_FILE, not both\./,
     );
-    assert.match(conflictingTokensHuman.stdout, /taskCreate: open/);
+    assert.match(conflictingTokensHuman.stdout, /taskCreate: disabled/);
     assert.match(
       conflictingTokensHuman.stderr,
       /Set either SWITCHBOARD_OPERATOR_TOKEN or SWITCHBOARD_OPERATOR_TOKEN_FILE, not both\./,
@@ -753,9 +754,9 @@ async function exampleMatrix() {
     );
     assert.deepEqual(conflictingTokensJsonPayload.failureCodes, ['operator_readiness_failed']);
     assert.deepEqual(conflictingTokensJsonPayload.scopes, {
-      taskCreate: 'open',
-      taskUpdate: 'open',
-      subscriptionRefresh: 'open',
+      taskCreate: 'disabled',
+      taskUpdate: 'disabled',
+      subscriptionRefresh: 'disabled',
       subscriptionReplace: 'disabled',
     });
 

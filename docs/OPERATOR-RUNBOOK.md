@@ -18,7 +18,7 @@ export SWITCHBOARD_BROKER_PORT=7007
 ```
 
 Re-running `npm run operator-token:save` against that same file fails closed unless you add `-- --rotate`, so a normal setup refresh does not silently replace an existing operator token. The intentional rotate path also re-applies owner-only permissions to the replacement token file and the default `.switchboard` token directory.
-If you use `npm run operator-token:save -- --file /private/path/operator-token`, the token file is still forced to `0600`, but the parent directory is not rewritten for you. Point custom targets at a directory you already control.
+If you use `npm run operator-token:save -- --file /path/to/private/operator-token`, the token file is still forced to `0600`, but the parent directory is not rewritten for you. Point custom targets at a directory you already control.
 
 Readiness checks:
 
@@ -62,9 +62,9 @@ Expected outcome:
 - operator token material stays in a private file instead of shell history
 
 Important:
-- the UI can cache the operator token in the browser for local mutation flows, but shell-based `doctor:*` and `doctor:preflight` checks do not read that browser cache
+- the UI keeps the operator token in memory for local mutation flows unless you explicitly choose to remember it in the browser for 24 hours; shell-based `doctor:*` and `doctor:preflight` checks do not read that browser state
 - if a local shell preflight or operator doctor still reports `operatorTokenConfigured=false`, export `SWITCHBOARD_OPERATOR_TOKEN` or `SWITCHBOARD_OPERATOR_TOKEN_FILE` in that shell before rerunning it
-- if a local-only shell instead says `Local-only mode should set SWITCHBOARD_OPERATOR_TOKEN.`, that is the same fail-closed operator posture spelled out directly: `operatorTokenSource` will be `unset`, `operatorTokenConfigured` stays `no` / `false`, and mutation scopes remain `open` until a shell token env or token file is configured
+- if a local-only shell instead says `Local-only mode should set SWITCHBOARD_OPERATOR_TOKEN.`, that is the same fail-closed operator posture spelled out directly: `operatorTokenSource` will be `unset`, `operatorTokenConfigured` stays `no` / `false`, and routine mutation scopes remain disabled unless you set a shell token env, token file, or the explicit dev-only `SWITCHBOARD_ALLOW_OPEN_LOOPBACK_MUTATIONS=1` escape hatch
 
 Optional local HTTPS:
 
@@ -84,6 +84,14 @@ export SWITCHBOARD_ENABLE_MANUAL_SUBSCRIPTION_REPLACE=1
 ```
 
 Only use that flag for operator-reviewed repair work. Do not leave it enabled as a normal sync path.
+
+Disposable local development escape hatch:
+
+```bash
+export SWITCHBOARD_ALLOW_OPEN_LOOPBACK_MUTATIONS=1
+```
+
+Use this only for throwaway loopback testing when no operator token is available. Reviewed local and remote-trusted shells should use `SWITCHBOARD_OPERATOR_TOKEN_FILE`.
 
 ## Remote-trusted operator mode
 
@@ -137,7 +145,7 @@ Notes:
 For the current OpenAI/Codex supervisor path:
 
 ```bash
-export SWITCHBOARD_OPENAI_REFRESH_COMMAND_JSON='["node","/Users/mhedhli/Documents/Coding/Switchboard/scripts/provider-sync/openai-codex-sync.mjs"]'
+export SWITCHBOARD_OPENAI_REFRESH_COMMAND_JSON="[\"node\",\"$PWD/scripts/provider-sync/openai-codex-sync.mjs\"]"
 ```
 
 Optional local Codex path override:
@@ -209,7 +217,7 @@ Preflight JSON now also preserves the richer direct raw and wrapped Codex `messa
 Those human `doctor:preflight` Codex sections now also preserve the same identity, freshness, and wrapped `source:` rows as the direct doctors, so wrapped preflight output keeps `source:` plus `account:` and `refreshed:`, including `app-server rate-limits` on healthy paths and `app-server account` on degraded partial-app-server paths, while raw preflight output keeps `user agent:` alongside account, plan, auth, and degraded host or endpoint hints.
 The preflight JSON contract now also preserves the same typed-vs-total count detail for direct raw and wrapped Codex status in `checkDetails.raw_codex_app_server` and `checkDetails.codex_wrapper`, so rollout tooling does not have to infer that from coverage labels alone. Those machine-readable Codex entries now also preserve the direct raw and wrapped identity rows too: raw `userAgent`, `accountType`, `plan`, and `endpoint`, plus wrapped `account`, `refreshedAt`, `refreshedDisplay`, `plan`, and `credits`.
 
-The human `operator` sections in both `doctor:operator` and `doctor:preflight` now also print the direct operator `message:` line before the detail rows, preserve `operatorTokenSource`, the token-file basename when available, and any sanitized `operatorTokenProblem`, so shell-side token wiring issues are easier to distinguish from the browser-only UI token cache. Healthy local-only shells keep that basename-safe token-file detail visible too: if you use `SWITCHBOARD_OPERATOR_TOKEN_FILE`, the direct and preflight operator surfaces still stay `ready`, preserve `operatorTokenSource: file`, show `operatorTokenFile: operator-token`, and keep the same `local-only; host=127.0.0.1` summary text as the env-token baseline. If both `SWITCHBOARD_OPERATOR_TOKEN` and `SWITCHBOARD_OPERATOR_TOKEN_FILE` are set, that conflict now surfaces as a fail-closed operator posture too: `operatorTokenSource` still shows where the conflict came from, but `operatorTokenConfigured` drops to `no` and the mutation scopes fall back to `open` until the conflict is resolved. Local-only shells with no exported operator token now surface the same fail-closed posture just as explicitly: the operator `message:` becomes `Local-only mode should set SWITCHBOARD_OPERATOR_TOKEN.`, `operatorTokenSource` reports `unset`, and mutation scopes stay `open` until `SWITCHBOARD_OPERATOR_TOKEN` or `SWITCHBOARD_OPERATOR_TOKEN_FILE` is configured in that shell. The one-line preflight summary now also preserves healthy operator posture such as `operator=local-only, host=127.0.0.1` or `operator=remote-trusted, host=0.0.0.0`, plus readable provider-readiness detail such as `trusted_command_ready (unvalidated)` instead of flattening that state back to a generic advisory label.
+The human `operator` sections in both `doctor:operator` and `doctor:preflight` now also print the direct operator `message:` line before the detail rows, preserve `operatorTokenSource`, the token-file basename when available, and any sanitized `operatorTokenProblem`, so shell-side token wiring issues are easier to distinguish from the browser-only UI token cache. Healthy local-only shells keep that basename-safe token-file detail visible too: if you use `SWITCHBOARD_OPERATOR_TOKEN_FILE`, the direct and preflight operator surfaces still stay `ready`, preserve `operatorTokenSource: file`, show `operatorTokenFile: operator-token`, and keep the same `local-only; host=127.0.0.1` summary text as the env-token baseline. If both `SWITCHBOARD_OPERATOR_TOKEN` and `SWITCHBOARD_OPERATOR_TOKEN_FILE` are set, that conflict now surfaces as a fail-closed operator posture too: `operatorTokenSource` still shows where the conflict came from, but `operatorTokenConfigured` drops to `no` and routine mutation scopes stay disabled until the conflict is resolved. Local-only shells with no exported operator token now surface the same fail-closed posture just as explicitly: the operator `message:` becomes `Local-only mode should set SWITCHBOARD_OPERATOR_TOKEN.`, `operatorTokenSource` reports `unset`, and routine mutation scopes remain disabled unless `SWITCHBOARD_OPERATOR_TOKEN`, `SWITCHBOARD_OPERATOR_TOKEN_FILE`, or the explicit dev-only `SWITCHBOARD_ALLOW_OPEN_LOOPBACK_MUTATIONS=1` escape hatch is configured in that shell. The one-line preflight summary now also preserves healthy operator posture such as `operator=local-only, host=127.0.0.1` or `operator=remote-trusted, host=0.0.0.0`, plus readable provider-readiness detail such as `trusted_command_ready (unvalidated)` instead of flattening that state back to a generic advisory label.
 
 For automation or external tooling, both `doctor:operator` and `doctor:preflight` now support `--json`:
 

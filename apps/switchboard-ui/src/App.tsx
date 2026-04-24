@@ -80,6 +80,7 @@ const operatorTokenTtlMs = 24 * 60 * 60 * 1000;
 type StoredOperatorTokenState = {
   value: string;
   expiresAt: string | null;
+  remembered: boolean;
 };
 
 function hasBrowserStorage(): boolean {
@@ -103,6 +104,7 @@ function readStoredOperatorToken(nowMs = Date.now()): StoredOperatorTokenState {
     return {
       value: '',
       expiresAt: null,
+      remembered: false,
     };
   }
 
@@ -112,6 +114,7 @@ function readStoredOperatorToken(nowMs = Date.now()): StoredOperatorTokenState {
       return {
         value: '',
         expiresAt: null,
+        remembered: false,
       };
     }
 
@@ -121,6 +124,7 @@ function readStoredOperatorToken(nowMs = Date.now()): StoredOperatorTokenState {
       return {
         value: '',
         expiresAt: null,
+        remembered: false,
       };
     }
 
@@ -130,31 +134,43 @@ function readStoredOperatorToken(nowMs = Date.now()): StoredOperatorTokenState {
       return {
         value: '',
         expiresAt: null,
+        remembered: false,
       };
     }
 
     return {
       value: parsed.value,
       expiresAt: parsed.expiresAt,
+      remembered: true,
     };
   } catch {
     clearStoredOperatorToken();
     return {
       value: '',
       expiresAt: null,
+      remembered: false,
     };
   }
 }
 
-function persistStoredOperatorToken(value: string, nowMs = Date.now()): string | null {
-  if (!hasBrowserStorage()) {
-    return null;
-  }
-
+function buildOperatorTokenState(value: string, remember: boolean, nowMs = Date.now()): StoredOperatorTokenState {
   const normalized = value.trim();
   if (!normalized) {
     clearStoredOperatorToken();
-    return null;
+    return {
+      value: '',
+      expiresAt: null,
+      remembered: false,
+    };
+  }
+
+  if (!remember || !hasBrowserStorage()) {
+    clearStoredOperatorToken();
+    return {
+      value,
+      expiresAt: null,
+      remembered: false,
+    };
   }
 
   const expiresAt = new Date(nowMs + operatorTokenTtlMs).toISOString();
@@ -164,9 +180,17 @@ function persistStoredOperatorToken(value: string, nowMs = Date.now()): string |
       value,
       expiresAt,
     }));
-    return expiresAt;
+    return {
+      value,
+      expiresAt,
+      remembered: true,
+    };
   } catch {
-    return null;
+    return {
+      value,
+      expiresAt: null,
+      remembered: false,
+    };
   }
 }
 
@@ -498,6 +522,7 @@ export function App() {
   const providerSummaries = dashboard?.providerSummaries ?? [];
   const operatorToken = storedOperatorToken.value;
   const operatorTokenExpiresAt = storedOperatorToken.expiresAt;
+  const operatorTokenRemembered = storedOperatorToken.remembered;
   const roleOptions = dashboard?.profile.roles ?? [];
   const taskCreateScope = authSummary?.scopes.taskCreate;
   const taskUpdateScope = authSummary?.scopes.taskUpdate;
@@ -528,10 +553,11 @@ export function App() {
   }
 
   function updateOperatorToken(nextValue: string): void {
-    setStoredOperatorToken({
-      value: nextValue,
-      expiresAt: persistStoredOperatorToken(nextValue),
-    });
+    setStoredOperatorToken((current) => buildOperatorTokenState(nextValue, current.remembered));
+  }
+
+  function updateOperatorTokenRemembered(remembered: boolean): void {
+    setStoredOperatorToken((current) => buildOperatorTokenState(current.value, remembered));
   }
 
   async function refreshAdapters(): Promise<void> {
@@ -684,14 +710,14 @@ export function App() {
               {authSummary
                 ? authSummary.localOnly
                   ? brokerTlsEnabled
-                    ? 'This broker is loopback-only and serving HTTPS. Mutation routes may stay open locally or require a token when one is configured.'
-                    : 'This broker is loopback-only over HTTP. Mutation routes may stay open locally or require a token when one is configured.'
+                    ? 'This broker is loopback-only and serving HTTPS. Mutation routes require an operator token unless the explicit dev-only open-loopback escape hatch is enabled.'
+                    : 'This broker is loopback-only over HTTP. Mutation routes require an operator token unless the explicit dev-only open-loopback escape hatch is enabled.'
                   : brokerTlsEnabled
                     ? 'This broker is prepared for non-local exposure over HTTPS. Keep it behind trusted network controls and token-gated mutation routes.'
                     : 'This broker is prepared for non-local exposure but is not serving HTTPS. Fix transport security before trusting remote access.'
                 : operatorTokenRequired
                   ? 'This broker currently requires an operator token for task and quota mutations.'
-                  : 'Operator token is optional while the broker stays loopback-only.'}
+                  : 'Operator token policy is not available yet.'}
             </p>
             {authSummary ? (
               <div className="account-signals">
@@ -716,9 +742,21 @@ export function App() {
                 }
               />
             </label>
+            <label className="checkbox-field">
+              <input
+                type="checkbox"
+                checked={operatorTokenRemembered}
+                onChange={(event) => updateOperatorTokenRemembered(event.target.checked)}
+              />
+              <span>Remember token in this browser for 24 hours</span>
+            </label>
             {operatorTokenExpiresAt ? (
               <p className="muted">
                 Saved in this browser until {formatTimestamp(operatorTokenExpiresAt)}.
+              </p>
+            ) : operatorToken ? (
+              <p className="muted">
+                Token is held in this session only.
               </p>
             ) : null}
             {authSummary && formatBrokerTokenSource(authSummary) ? (
@@ -733,7 +771,7 @@ export function App() {
             ) : null}
             {operatorToken ? (
               <p className="muted">
-                This browser cache only affects UI mutations. Shell-based `doctor:*` and `preflight` checks still read
+                This UI token only affects browser mutations. Shell-based `doctor:*` and `preflight` checks still read
                 `SWITCHBOARD_OPERATOR_TOKEN` or `SWITCHBOARD_OPERATOR_TOKEN_FILE`.
               </p>
             ) : null}

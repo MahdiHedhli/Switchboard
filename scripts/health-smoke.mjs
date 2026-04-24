@@ -12,6 +12,8 @@ const { BrokerAuthPolicy, buildBrokerHealthSnapshot, operatorTokenHeaderName } =
 
 const remoteTokenRequirementDetail =
   `Non-local broker exposure requires ${operatorTokenHeaderName} via SWITCHBOARD_OPERATOR_TOKEN or SWITCHBOARD_OPERATOR_TOKEN_FILE before mutation routes may be used.`;
+const localTokenRequirementDetail =
+  `Loopback mutation routes require ${operatorTokenHeaderName} via SWITCHBOARD_OPERATOR_TOKEN or SWITCHBOARD_OPERATOR_TOKEN_FILE. For disposable local development only, set SWITCHBOARD_ALLOW_OPEN_LOOPBACK_MUTATIONS=1.`;
 
 const localHealth = buildBrokerHealthSnapshot(
   new BrokerAuthPolicy({
@@ -37,6 +39,7 @@ assert.deepEqual(localHealth, {
     remoteExposureAllowed: false,
     operatorTokenConfigured: true,
     operatorTokenSource: 'env',
+    openLoopbackMutationsEnabled: false,
     manualSubscriptionReplaceEnabled: false,
     operatorTokenHeader: operatorTokenHeaderName,
     scopes: {
@@ -87,6 +90,7 @@ assert.deepEqual(localTokenFileHealth, {
     operatorTokenConfigured: true,
     operatorTokenSource: 'file',
     operatorTokenFile: 'operator-token',
+    openLoopbackMutationsEnabled: false,
     manualSubscriptionReplaceEnabled: false,
     operatorTokenHeader: operatorTokenHeaderName,
     scopes: {
@@ -126,7 +130,7 @@ assert.deepEqual(remoteBlockedHealth, {
   status: 'ok',
   service: 'switchboard-broker',
   localOnly: false,
-  operatorTokenRequired: false,
+  operatorTokenRequired: true,
   protocol: 'https',
   tlsEnabled: true,
   auth: {
@@ -134,6 +138,7 @@ assert.deepEqual(remoteBlockedHealth, {
     remoteExposureAllowed: true,
     operatorTokenConfigured: false,
     operatorTokenSource: 'unset',
+    openLoopbackMutationsEnabled: false,
     manualSubscriptionReplaceEnabled: false,
     operatorTokenHeader: operatorTokenHeaderName,
     scopes: {
@@ -184,6 +189,7 @@ assert.deepEqual(remoteTokenFileHealth, {
     operatorTokenConfigured: true,
     operatorTokenSource: 'file',
     operatorTokenFile: 'operator-token',
+    openLoopbackMutationsEnabled: false,
     manualSubscriptionReplaceEnabled: false,
     operatorTokenHeader: operatorTokenHeaderName,
     scopes: {
@@ -225,7 +231,7 @@ assert.deepEqual(invalidTokenFileHealth, {
   status: 'ok',
   service: 'switchboard-broker',
   localOnly: true,
-  operatorTokenRequired: false,
+  operatorTokenRequired: true,
   protocol: 'http',
   tlsEnabled: false,
   auth: {
@@ -235,20 +241,21 @@ assert.deepEqual(invalidTokenFileHealth, {
     operatorTokenSource: 'file',
     operatorTokenFile: 'operator-token',
     operatorTokenProblem: 'SWITCHBOARD_OPERATOR_TOKEN_FILE must not be accessible by group or others. Use chmod 600.',
+    openLoopbackMutationsEnabled: false,
     manualSubscriptionReplaceEnabled: false,
     operatorTokenHeader: operatorTokenHeaderName,
     scopes: {
       taskCreate: {
-        requirement: 'open',
-        detail: 'Allowed while the broker stays loopback-only.',
+        requirement: 'disabled',
+        detail: localTokenRequirementDetail,
       },
       taskUpdate: {
-        requirement: 'open',
-        detail: 'Allowed while the broker stays loopback-only.',
+        requirement: 'disabled',
+        detail: localTokenRequirementDetail,
       },
       subscriptionRefresh: {
-        requirement: 'open',
-        detail: 'Allowed while the broker stays loopback-only.',
+        requirement: 'disabled',
+        detail: localTokenRequirementDetail,
       },
       subscriptionReplace: {
         requirement: 'disabled',
@@ -276,7 +283,7 @@ assert.deepEqual(remoteInvalidTokenFileHealth, {
   status: 'ok',
   service: 'switchboard-broker',
   localOnly: false,
-  operatorTokenRequired: false,
+  operatorTokenRequired: true,
   protocol: 'https',
   tlsEnabled: true,
   auth: {
@@ -286,6 +293,7 @@ assert.deepEqual(remoteInvalidTokenFileHealth, {
     operatorTokenSource: 'file',
     operatorTokenFile: 'operator-token',
     operatorTokenProblem: 'SWITCHBOARD_OPERATOR_TOKEN_FILE must not be accessible by group or others. Use chmod 600.',
+    openLoopbackMutationsEnabled: false,
     manualSubscriptionReplaceEnabled: false,
     operatorTokenHeader: operatorTokenHeaderName,
     scopes: {
@@ -328,7 +336,7 @@ assert.deepEqual(invalidDefaultTokenDirectoryHealth, {
   status: 'ok',
   service: 'switchboard-broker',
   localOnly: true,
-  operatorTokenRequired: false,
+  operatorTokenRequired: true,
   protocol: 'http',
   tlsEnabled: false,
   auth: {
@@ -339,20 +347,21 @@ assert.deepEqual(invalidDefaultTokenDirectoryHealth, {
     operatorTokenFile: 'operator-token',
     operatorTokenProblem:
       'Parent directory for SWITCHBOARD_OPERATOR_TOKEN_FILE must not be accessible by group or others. Use chmod 700.',
+    openLoopbackMutationsEnabled: false,
     manualSubscriptionReplaceEnabled: false,
     operatorTokenHeader: operatorTokenHeaderName,
     scopes: {
       taskCreate: {
-        requirement: 'open',
-        detail: 'Allowed while the broker stays loopback-only.',
+        requirement: 'disabled',
+        detail: localTokenRequirementDetail,
       },
       taskUpdate: {
-        requirement: 'open',
-        detail: 'Allowed while the broker stays loopback-only.',
+        requirement: 'disabled',
+        detail: localTokenRequirementDetail,
       },
       subscriptionRefresh: {
-        requirement: 'open',
-        detail: 'Allowed while the broker stays loopback-only.',
+        requirement: 'disabled',
+        detail: localTokenRequirementDetail,
       },
       subscriptionReplace: {
         requirement: 'disabled',
@@ -381,7 +390,7 @@ assert.deepEqual(remoteInvalidDefaultTokenDirectoryHealth, {
   status: 'ok',
   service: 'switchboard-broker',
   localOnly: false,
-  operatorTokenRequired: false,
+  operatorTokenRequired: true,
   protocol: 'https',
   tlsEnabled: true,
   auth: {
@@ -392,6 +401,7 @@ assert.deepEqual(remoteInvalidDefaultTokenDirectoryHealth, {
     operatorTokenFile: 'operator-token',
     operatorTokenProblem:
       'Parent directory for SWITCHBOARD_OPERATOR_TOKEN_FILE must not be accessible by group or others. Use chmod 700.',
+    openLoopbackMutationsEnabled: false,
     manualSubscriptionReplaceEnabled: false,
     operatorTokenHeader: operatorTokenHeaderName,
     scopes: {

@@ -17,8 +17,24 @@ function requestWithToken(token) {
   };
 }
 
+const localLockedPolicy = new BrokerAuthPolicy({
+  host: '127.0.0.1',
+});
+assert.deepEqual(
+  authorizeBrokerMutationRequest(requestWithToken(), localLockedPolicy, 'taskCreate'),
+  {
+    ok: false,
+    statusCode: 403,
+    payload: {
+      error: 'forbidden',
+      detail: `Loopback mutation routes require ${operatorTokenHeaderName} via SWITCHBOARD_OPERATOR_TOKEN or SWITCHBOARD_OPERATOR_TOKEN_FILE. For disposable local development only, set SWITCHBOARD_ALLOW_OPEN_LOOPBACK_MUTATIONS=1.`,
+    },
+  },
+);
+
 const localOpenPolicy = new BrokerAuthPolicy({
   host: '127.0.0.1',
+  allowOpenLoopbackMutations: true,
 });
 assert.deepEqual(
   authorizeBrokerMutationRequest(requestWithToken(), localOpenPolicy, 'taskCreate'),

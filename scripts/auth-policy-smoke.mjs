@@ -23,11 +23,35 @@ assert.equal(isLoopbackHost('::1'), true);
 assert.equal(isLoopbackHost('0.0.0.0'), false);
 assert.equal(isLoopbackHost('192.168.1.20'), false);
 
+const localLockedPolicy = new BrokerAuthPolicy({
+  host: '127.0.0.1',
+});
+assert.equal(localLockedPolicy.summary().localOnly, true);
+assert.equal(localLockedPolicy.summary().operatorTokenConfigured, false);
+assert.equal(localLockedPolicy.summary().openLoopbackMutationsEnabled, false);
+assert.equal(localLockedPolicy.summary().scopes.taskCreate.requirement, 'disabled');
+assert.equal(localLockedPolicy.summary().scopes.subscriptionRefresh.requirement, 'disabled');
+assert.equal(localLockedPolicy.summary().scopes.subscriptionReplace.requirement, 'disabled');
+assert.deepEqual(localLockedPolicy.authorize(requestWithToken(), 'taskCreate'), {
+  ok: false,
+  requirement: 'disabled',
+  statusCode: 403,
+  detail: `Loopback mutation routes require ${operatorTokenHeaderName} via SWITCHBOARD_OPERATOR_TOKEN or SWITCHBOARD_OPERATOR_TOKEN_FILE. For disposable local development only, set SWITCHBOARD_ALLOW_OPEN_LOOPBACK_MUTATIONS=1.`,
+});
+assert.deepEqual(localLockedPolicy.authorize(requestWithToken(), 'subscriptionReplace'), {
+  ok: false,
+  requirement: 'disabled',
+  statusCode: 403,
+  detail: 'Direct subscription replacement is disabled by default. Prefer provider refresh, or enable reviewed local recovery with SWITCHBOARD_ENABLE_MANUAL_SUBSCRIPTION_REPLACE=1.',
+});
+
 const localOpenPolicy = new BrokerAuthPolicy({
   host: '127.0.0.1',
+  allowOpenLoopbackMutations: true,
 });
 assert.equal(localOpenPolicy.summary().localOnly, true);
 assert.equal(localOpenPolicy.summary().operatorTokenConfigured, false);
+assert.equal(localOpenPolicy.summary().openLoopbackMutationsEnabled, true);
 assert.equal(localOpenPolicy.summary().scopes.taskCreate.requirement, 'open');
 assert.equal(localOpenPolicy.summary().scopes.subscriptionRefresh.requirement, 'open');
 assert.equal(localOpenPolicy.summary().scopes.subscriptionReplace.requirement, 'disabled');
