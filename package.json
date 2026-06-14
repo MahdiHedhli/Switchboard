@@ -19,6 +19,8 @@
     "audit": "npm audit",
     "operator-token:save": "node scripts/save-operator-token.mjs",
     "sync:codex": "node scripts/provider-sync/openai-codex-sync.mjs",
+    "sync:anthropic": "node scripts/provider-sync/anthropic-claude-sync.mjs",
+    "sync:google": "node scripts/provider-sync/google-gemini-sync.mjs",
     "smoke:adapters": "npm run build && node scripts/adapter-boundary-smoke.mjs",
     "smoke:adapter-conflict": "npm run build && node scripts/adapter-conflict-smoke.mjs",
     "smoke:adapter-status": "npm run build && node scripts/adapter-status-smoke.mjs",
@@ -28,12 +30,14 @@
     "smoke:codex-app-server": "node scripts/codex-app-server-doctor-smoke.mjs",
     "smoke:codex": "node scripts/codex-wrapper-smoke.mjs",
     "smoke:codex-doctor": "node scripts/codex-doctor-smoke.mjs",
+    "smoke:anthropic": "npm run build && node scripts/anthropic-claude-sync-smoke.mjs",
     "smoke:dashboard": "npm run build && node scripts/dashboard-smoke.mjs",
     "smoke:doctor-contracts": "npm run build && node scripts/doctor-contracts-smoke.mjs",
     "smoke:error-http-response": "npm run build && node scripts/error-http-response-smoke.mjs",
     "smoke:error-response": "npm run build && node scripts/error-response-smoke.mjs",
     "smoke:failure-response": "npm run build && node scripts/failure-response-smoke.mjs",
     "smoke:health": "npm run build && node scripts/health-smoke.mjs",
+    "smoke:google": "npm run build && node scripts/google-gemini-sync-smoke.mjs",
     "smoke:local-broker-launch": "node scripts/local-broker-launch-smoke.mjs",
     "smoke:mutation-authorization": "npm run build && node scripts/mutation-authorization-smoke.mjs",
     "smoke:operator": "npm run build && node scripts/operator-readiness-smoke.mjs example-matrix",
@@ -63,7 +67,7 @@
     "doctor:preflight": "npm run build && node scripts/preflight-doctor.mjs",
     "doctor:providers": "npm run build && node scripts/provider-readiness-doctor.mjs",
     "doctor:provider-sync": "npm run build && node scripts/provider-sync-doctor.mjs",
-    "verify:control-plane": "npm run typecheck && npm run build && npm run smoke:broker-parse && node scripts/adapter-boundary-smoke.mjs && node scripts/adapter-conflict-smoke.mjs && node scripts/adapter-status-smoke.mjs && node scripts/adapters-snapshot-smoke.mjs && node scripts/auth-policy-smoke.mjs && node scripts/codex-app-server-diagnostics-smoke.mjs && node scripts/codex-app-server-doctor-smoke.mjs && node scripts/codex-wrapper-smoke.mjs && node scripts/codex-doctor-smoke.mjs && node scripts/dashboard-smoke.mjs && node scripts/doctor-contracts-smoke.mjs && node scripts/error-http-response-smoke.mjs && node scripts/error-response-smoke.mjs && node scripts/failure-response-smoke.mjs && node scripts/health-smoke.mjs && node scripts/local-broker-launch-smoke.mjs && node scripts/mutation-authorization-smoke.mjs && node scripts/operator-readiness-smoke.mjs example-matrix && node scripts/planner-smoke.mjs && node scripts/preflight-contract-smoke.mjs && node scripts/preflight-doctor-smoke.mjs && node scripts/profile-loader-smoke.mjs && node scripts/profile-resolution-smoke.mjs && node scripts/profiles-snapshot-smoke.mjs && node scripts/provider-readiness-smoke.mjs && node scripts/provider-sync-doctor-smoke.mjs && node scripts/request-body-smoke.mjs && node scripts/refresh-smoke.mjs && node scripts/refresh-snapshot-smoke.mjs && node scripts/response-envelope-smoke.mjs && node scripts/route-contract-smoke.mjs && node scripts/runtime-config-smoke.mjs && node scripts/state-snapshot-smoke.mjs && node scripts/state-store-smoke.mjs && node scripts/subscription-sync-smoke.mjs && node scripts/task-snapshot-smoke.mjs",
+    "verify:control-plane": "npm run typecheck && npm run build && npm run smoke:broker-parse && node scripts/adapter-boundary-smoke.mjs && node scripts/adapter-conflict-smoke.mjs && node scripts/adapter-status-smoke.mjs && node scripts/adapters-snapshot-smoke.mjs && node scripts/anthropic-claude-sync-smoke.mjs && node scripts/auth-policy-smoke.mjs && node scripts/codex-app-server-diagnostics-smoke.mjs && node scripts/codex-app-server-doctor-smoke.mjs && node scripts/codex-wrapper-smoke.mjs && node scripts/codex-doctor-smoke.mjs && node scripts/dashboard-smoke.mjs && node scripts/doctor-contracts-smoke.mjs && node scripts/error-http-response-smoke.mjs && node scripts/error-response-smoke.mjs && node scripts/failure-response-smoke.mjs && node scripts/google-gemini-sync-smoke.mjs && node scripts/health-smoke.mjs && node scripts/local-broker-launch-smoke.mjs && node scripts/mutation-authorization-smoke.mjs && node scripts/operator-readiness-smoke.mjs example-matrix && node scripts/planner-smoke.mjs && node scripts/preflight-contract-smoke.mjs && node scripts/preflight-doctor-smoke.mjs && node scripts/profile-loader-smoke.mjs && node scripts/profile-resolution-smoke.mjs && node scripts/profiles-snapshot-smoke.mjs && node scripts/provider-readiness-smoke.mjs && node scripts/provider-sync-doctor-smoke.mjs && node scripts/request-body-smoke.mjs && node scripts/refresh-smoke.mjs && node scripts/refresh-snapshot-smoke.mjs && node scripts/response-envelope-smoke.mjs && node scripts/route-contract-smoke.mjs && node scripts/runtime-config-smoke.mjs && node scripts/state-snapshot-smoke.mjs && node scripts/state-store-smoke.mjs && node scripts/subscription-sync-smoke.mjs && node scripts/task-snapshot-smoke.mjs",
     "verify": "npm run typecheck && npm run build && npm run audit"
   }
 }

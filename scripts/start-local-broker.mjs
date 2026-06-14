@@ -6,6 +6,8 @@ import { buildLocalBrokerEnvironment, repoRoot } from './local-broker-launch.mjs
 const brokerEntry = path.join(repoRoot, 'apps/broker/dist/index.js');
 export const defaultLocalOpenaiRefreshCommandNotice =
   'Switchboard local broker is using the default reviewed OpenAI refresh command because no explicit OpenAI adapter env or sanitized openai.json snapshot was found.';
+export const defaultLocalProviderRefreshCommandNotice =
+  'Switchboard local broker is using default reviewed provider refresh commands for providers without explicit adapter env or sanitized snapshots.';
 
 function fail(message) {
   console.error(message);
@@ -13,9 +15,11 @@ function fail(message) {
 }
 
 async function main() {
-  const { env, inferredOpenaiRefreshCommand } = await buildLocalBrokerEnvironment(process.env);
+  const { env, inferredOpenaiRefreshCommand, inferredProviderRefreshCommands = [] } = await buildLocalBrokerEnvironment(process.env);
 
-  if (inferredOpenaiRefreshCommand) {
+  if (inferredProviderRefreshCommands.length > 1 || (inferredProviderRefreshCommands.length === 1 && !inferredOpenaiRefreshCommand)) {
+    console.log(defaultLocalProviderRefreshCommandNotice);
+  } else if (inferredOpenaiRefreshCommand) {
     console.log(defaultLocalOpenaiRefreshCommandNotice);
   }
 

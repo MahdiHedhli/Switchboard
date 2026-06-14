@@ -291,6 +291,102 @@ assert.deepEqual(
   }),
   ['openai · login-status-fallback'],
 );
+
+const anthropicStatus = account('Claude Code (Max)', [
+  { id: 'source', label: 'source', value: 'claude auth status' },
+  { id: 'subscription', label: 'subscription', value: 'Max' },
+]);
+
+assert.deepEqual(describeSubscriptionSync(anthropicStatus), {
+  mode: 'provider-status',
+  source: 'claude auth status',
+  rateLimitsDetail: undefined,
+  rateLimitsHost: undefined,
+  openaiAuthRequired: false,
+  degraded: false,
+});
+assert.equal(formatSubscriptionSyncBadge(anthropicStatus), null);
+assert.equal(formatSubscriptionSyncPlannerMessage(anthropicStatus), null);
+assert.equal(
+  formatProviderSyncSummaryMessage({
+    syncBadges: [],
+    syncModes: ['provider-status'],
+    accountSyncMethods: ['provider'],
+  }),
+  'provider status available',
+);
+assert.equal(
+  formatProviderRefreshSummaryMessage({
+    provider: 'anthropic',
+    accounts: 1,
+    accountDisplayNames: ['Claude Code (Max)'],
+    accountSyncMethods: ['provider'],
+    syncBadges: [],
+    syncModes: ['provider-status'],
+    degraded: false,
+    quotaCoverage: 'informational_only',
+    quotaModels: 1,
+    typedQuotaModels: 0,
+  }),
+  'anthropic refreshed Claude Code (Max) · provider status available · informational quota only',
+);
+
+const googleProbe = account('Gemini CLI', [
+  { id: 'source', label: 'source', value: 'gemini live probe' },
+  { id: 'probe', label: 'probe', value: 'ok' },
+]);
+
+assert.deepEqual(describeSubscriptionSync(googleProbe), {
+  mode: 'provider-live-probe',
+  source: 'gemini live probe',
+  rateLimitsDetail: undefined,
+  rateLimitsHost: undefined,
+  openaiAuthRequired: false,
+  degraded: false,
+});
+assert.equal(
+  formatProviderSyncSummaryMessage({
+    syncBadges: [],
+    syncModes: ['provider-live-probe'],
+    accountSyncMethods: ['provider'],
+  }),
+  'provider live probe available',
+);
+
+const googleUnavailable = account('Gemini CLI', [
+  { id: 'source', label: 'source', value: 'gemini cli unavailable' },
+]);
+
+assert.deepEqual(describeSubscriptionSync(googleUnavailable), {
+  mode: 'provider-unavailable',
+  source: 'gemini cli unavailable',
+  rateLimitsDetail: undefined,
+  rateLimitsHost: undefined,
+  openaiAuthRequired: false,
+  degraded: true,
+});
+assert.equal(formatSubscriptionSyncBadge(googleUnavailable), 'gemini cli unavailable');
+assert.equal(formatSubscriptionAccountWarning(googleUnavailable), 'gemini cli unavailable');
+assert.equal(
+  formatSubscriptionSyncPlannerMessage(googleUnavailable),
+  'Gemini CLI provider status is unavailable. Typed quota windows are unavailable in this launch context.',
+);
+assert.deepEqual(
+  formatPlannerWarningPills({
+    code: 'provider_sync_degraded',
+    message: 'ignored for smoke',
+    details: {
+      kind: 'provider_sync',
+      provider: 'google',
+      accountId: 'google-gemini-unavailable',
+      displayName: 'Gemini CLI',
+      mode: 'provider-unavailable',
+      source: 'gemini cli unavailable',
+      openaiAuthRequired: false,
+    },
+  }),
+  ['google · provider-unavailable'],
+);
 assert.equal(
   formatProviderSyncSummaryMessage({
     syncBadges: ['login fallback: app-server unavailable'],

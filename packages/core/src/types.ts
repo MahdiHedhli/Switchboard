@@ -21,6 +21,9 @@ export type SubscriptionSyncMode =
   | 'app-server-rate-limits'
   | 'app-server-account'
   | 'login-status-fallback'
+  | 'provider-status'
+  | 'provider-live-probe'
+  | 'provider-unavailable'
   | 'unknown';
 
 export interface SubscriptionSignal {

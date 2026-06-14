@@ -67,6 +67,39 @@ export function describeSubscriptionSync(account: Pick<SubscriptionAccount, 'sig
     };
   }
 
+  if (source === 'claude auth status' || source === 'gemini version') {
+    return {
+      mode: 'provider-status',
+      source,
+      rateLimitsDetail,
+      rateLimitsHost,
+      openaiAuthRequired,
+      degraded: false,
+    };
+  }
+
+  if (source === 'gemini live probe') {
+    return {
+      mode: 'provider-live-probe',
+      source,
+      rateLimitsDetail,
+      rateLimitsHost,
+      openaiAuthRequired,
+      degraded: false,
+    };
+  }
+
+  if (source === 'claude cli unavailable' || source === 'gemini cli unavailable') {
+    return {
+      mode: 'provider-unavailable',
+      source,
+      rateLimitsDetail,
+      rateLimitsHost,
+      openaiAuthRequired,
+      degraded: true,
+    };
+  }
+
   return {
     mode: 'unknown',
     source,
@@ -90,6 +123,10 @@ export function formatSubscriptionSyncBadge(account: Pick<SubscriptionAccount, '
     return `login fallback${state.rateLimitsDetail ? `: ${state.rateLimitsDetail}` : ''}${hostSuffix}${authSuffix}`;
   }
 
+  if (state.mode === 'provider-unavailable') {
+    return `${state.source ?? 'provider unavailable'}${state.rateLimitsDetail ? `: ${state.rateLimitsDetail}` : ''}${hostSuffix}${authSuffix}`;
+  }
+
   return null;
 }
 
@@ -108,6 +145,10 @@ export function formatSubscriptionSyncPlannerMessage(
     return `${account.displayName} is running on login-status fallback${state.rateLimitsDetail ? ` (${state.rateLimitsDetail}${hostSuffix})` : hostSuffix ? ` (${hostSuffix.trim()})` : ''}${authSuffix}. Typed rate-limit windows are unavailable in this launch context.`;
   }
 
+  if (state.mode === 'provider-unavailable') {
+    return `${account.displayName} provider status is unavailable${state.rateLimitsDetail ? ` (${state.rateLimitsDetail}${hostSuffix})` : hostSuffix ? ` (${hostSuffix.trim()})` : ''}${authSuffix}. Typed quota windows are unavailable in this launch context.`;
+  }
+
   return null;
 }
 
@@ -117,7 +158,7 @@ export function buildSubscriptionSyncWarningDetail(
   const state = describeSubscriptionSync(account);
   const accountSyncMethods = account.syncMethod ? [account.syncMethod] : undefined;
 
-  if (state.mode === 'app-server-account' || state.mode === 'login-status-fallback') {
+  if (state.mode === 'app-server-account' || state.mode === 'login-status-fallback' || state.mode === 'provider-unavailable') {
     return {
       kind: 'provider_sync',
       provider: account.provider,
@@ -323,6 +364,18 @@ export function formatProviderSyncSummaryMessage(
 
   if (summary.syncModes.includes('app-server-rate-limits')) {
     return 'app-server rate-limits available';
+  }
+
+  if (summary.syncModes.includes('provider-live-probe')) {
+    return 'provider live probe available';
+  }
+
+  if (summary.syncModes.includes('provider-status')) {
+    return 'provider status available';
+  }
+
+  if (summary.syncModes.includes('provider-unavailable')) {
+    return 'provider unavailable';
   }
 
   if (summary.syncModes.length > 0) {

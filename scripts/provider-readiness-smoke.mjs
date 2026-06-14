@@ -333,7 +333,14 @@ async function main() {
     assert.equal(anthropicReadyPayload.providers[0]?.state, 'snapshot_ready');
     assert.equal(anthropicReadyPayload.providers[0]?.accountCount, 1);
 
-    const googleMissingJson = await runDoctor(['google'], { SWITCHBOARD_SNAPSHOT_DIR: snapshotDir }, true);
+    const googleMissingJson = await runDoctor(
+      ['google'],
+      {
+        SWITCHBOARD_SNAPSHOT_DIR: snapshotDir,
+        SWITCHBOARD_SKIP_LOCAL_BROKER_DEFAULTS: '1',
+      },
+      true,
+    );
     assert.equal(googleMissingJson.code, 0);
     const googleMissingPayload = JSON.parse(googleMissingJson.stdout);
     assert.equal(googleMissingPayload.verdict, 'attention_required');
@@ -356,7 +363,14 @@ async function main() {
     assert.equal(googleMissingPayload.message, 'No sanitized snapshot file found yet.');
     assert.equal(googleMissingPayload.providers[0]?.state, 'snapshot_missing');
 
-    const googleMissingText = await runDoctor(['google'], { SWITCHBOARD_SNAPSHOT_DIR: snapshotDir }, false);
+    const googleMissingText = await runDoctor(
+      ['google'],
+      {
+        SWITCHBOARD_SNAPSHOT_DIR: snapshotDir,
+        SWITCHBOARD_SKIP_LOCAL_BROKER_DEFAULTS: '1',
+      },
+      false,
+    );
     assert.equal(googleMissingText.code, 0);
     assert.match(googleMissingText.stdout, /message: No sanitized snapshot file found yet\./);
     assert.match(googleMissingText.stdout, /google: No sanitized snapshot file found yet\. \(snapshot\)/);

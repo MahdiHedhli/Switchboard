@@ -40,7 +40,9 @@ The repository now has a first production-oriented slice in place:
 - private sanitized quota imports under `.switchboard/provider-snapshots/`
 - trusted-command provider sync that can reuse reviewed local wrappers or OAuth-backed installed clients without persisting raw secrets
 - a first OpenAI/Codex supervisor wrapper in `scripts/provider-sync/openai-codex-sync.mjs`
+- first Anthropic/Claude Code and Google/Gemini trusted-command wrappers in `scripts/provider-sync/anthropic-claude-sync.mjs` and `scripts/provider-sync/google-gemini-sync.mjs`
 - typed Codex app-server rate-limit and plan snapshots now flow into the OpenAI/Codex wrapper when available
+- Anthropic and Google wrappers currently provide sanitized provider status only; typed quota windows for those providers are still future work
 - structured account signals now separate source, plan, and credit metadata from quota-row notes
 - percentage-window budgets are treated as advisory planning data instead of raw spendable credits
 - planner warnings now distinguish unavailable models from low or non-comparable quota states
@@ -63,7 +65,7 @@ The repository now has a first production-oriented slice in place:
 - direct subscription replacement disabled by default unless explicitly re-enabled for reviewed local recovery
 - a repeatable broker smoke test via `npm run smoke:broker`
 
-The next steps are verifying Codex app-server availability across launch contexts, extending additional provider wrappers, strengthening operator identity and approval review flows on top of the scoped auth policy, and release-operations polish.
+The next steps are validating the new Anthropic and Google wrappers against real broker refresh paths, strengthening operator identity and approval review flows on top of the scoped auth policy, and release-operations polish.
 
 ## Visualization layer
 
@@ -218,7 +220,10 @@ A Codex handoff brief is included in `docs/CODEX-HANDOFF.md`.
 - provider refresh summaries now also preserve account display names, latest account refresh timestamps, and grouped account sync methods, so operator toasts and quota-refresh cards can show which subscription account was actually refreshed and how that account state was sourced instead of only provider-level counts. The reviewed file-backed healthy mixed broker branches now also explicitly pin that grouped account context on both local and remote paths, keeping `accountDisplayNames`, `latestAccountRefreshedAt`, and `accountSyncMethods` aligned between refresh and dashboard provider summaries instead of leaving that shape implied by the grouped helper alone.
 - successful-but-degraded OpenAI/Codex sync now surfaces as `attention_required` in `doctor:provider-sync`, keeping live command execution distinct from healthy rate-limit-window access.
 - `npm run sync:codex` emits the current sanitized OpenAI/Codex supervisor snapshot from the local Codex CLI.
-- `npm run dev:broker` builds and starts the local broker on `127.0.0.1:7007`. `npm --workspace @switchboard/broker run dev` and `cd apps/broker && npm run dev` now use the same launcher. When no explicit OpenAI adapter env is set and no `.switchboard/provider-snapshots/openai.json` exists, that launcher auto-wires the reviewed repo-owned `scripts/provider-sync/openai-codex-sync.mjs` bridge for local loopback testing. When that fallback is inferred, the launcher prints a single sanitized notice instead of echoing local command paths.
+- `npm run sync:anthropic` emits the current sanitized Anthropic/Claude Code provider-status snapshot from the local Claude CLI.
+- `npm run sync:google` emits the current sanitized Google/Gemini provider-status snapshot from the local Gemini CLI. Live probing is opt-in through `SWITCHBOARD_GOOGLE_LIVE_PROBE=1` because it may consume provider quota.
+- `npm run smoke:anthropic` and `npm run smoke:google` validate those wrappers against fake CLI fixtures without opening local ports.
+- `npm run dev:broker` builds and starts the local broker on `127.0.0.1:7007`. `npm --workspace @switchboard/broker run dev` and `cd apps/broker && npm run dev` now use the same launcher. When no explicit provider adapter env is set and no matching `.switchboard/provider-snapshots/<provider>.json` exists, that launcher auto-wires the reviewed repo-owned OpenAI/Codex, Anthropic/Claude, and Google/Gemini bridges for local loopback testing. When those fallbacks are inferred, the launcher prints a sanitized notice instead of echoing local command paths.
 - `npm run operator-token:save` writes a strong operator token to `$HOME/.switchboard/operator-token` with owner-only storage and refuses to overwrite that file unless you rerun it intentionally with `npm run operator-token:save -- --rotate`, which also re-applies owner-only mode to the replacement token file and the default `.switchboard` token directory. When you use `--file /custom/path`, the token file is still forced to `0600`, but the parent directory stays caller-managed and should already be private.
 - `npm run dev:broker:remote-trusted` builds and starts the reviewed remote-trusted broker path with `SWITCHBOARD_ALLOW_REMOTE=1`, HTTPS, and token-file loading. If `SWITCHBOARD_OPERATOR_TOKEN_FILE` is unset, it defaults to `$HOME/.switchboard/operator-token`, which matches `npm run operator-token:save`.
 - `npm run dev:ui` starts the Vite UI with `/api` proxied to the broker.
@@ -253,6 +258,13 @@ Codex-first local setup:
 export SWITCHBOARD_OPENAI_REFRESH_COMMAND_JSON="[\"node\",\"$PWD/scripts/provider-sync/openai-codex-sync.mjs\"]"
 ```
 
+Anthropic and Google local setup:
+
+```bash
+export SWITCHBOARD_ANTHROPIC_REFRESH_COMMAND_JSON="[\"node\",\"$PWD/scripts/provider-sync/anthropic-claude-sync.mjs\"]"
+export SWITCHBOARD_GOOGLE_REFRESH_COMMAND_JSON="[\"node\",\"$PWD/scripts/provider-sync/google-gemini-sync.mjs\"]"
+```
+
 The command must:
 - run locally without shell expansion
 - emit sanitized JSON to stdout using the schema in [docs/QUOTA-SNAPSHOT-SCHEMA.md](docs/QUOTA-SNAPSHOT-SCHEMA.md)
@@ -264,6 +276,8 @@ The current Codex wrapper now prefers the local Codex app-server rate-limit surf
 - additional credit balance metadata when Codex exposes it
 
 The wrapper stores source, plan, and credit metadata as structured account signals instead of burying them in quota notes. If `account/read` succeeds but rate-limits do not, it keeps the typed app-server account context, marks the source as `app-server account`, and surfaces a sanitized rate-limit availability signal. Only earlier app-server failures fall back to `login-status fallback`. It normalizes usage-window percentages into `limit=100`, `used=<percent>`, and `remaining=<percent>` with `interpretation: "percentage_window"` and `usageUnit: unknown`, and now preserves explicit per-model quota windows for the 5-hour and weekly Codex surfaces when those are available. The UI renders those windows directly instead of flattening weekly limits into freeform notes, and the planner still treats them as advisory windows instead of pretending they are raw credits.
+
+The Anthropic/Claude wrapper uses `claude --version` plus `claude auth status --json` when available, then emits only sanitized account status, auth method, subscription tier, CLI version, and informational quota coverage. It strips user email and organization identifiers before stdout. The Google/Gemini wrapper checks the installed Gemini CLI version by default and emits informational provider status. Set `SWITCHBOARD_GOOGLE_LIVE_PROBE=1` only when a real provider call is acceptable for that shell; live probing may consume quota and still does not create typed quota windows.
 
 When refresh succeeds through this path, persisted subscription records are marked as `syncMethod: provider`.
 

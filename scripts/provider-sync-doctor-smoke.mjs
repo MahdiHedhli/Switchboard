@@ -771,6 +771,7 @@ process.stdout.write(JSON.stringify(payloads[scenario] ?? payloads['full-rate-li
       ['openai', 'google'],
       {
         SWITCHBOARD_SNAPSHOT_DIR: snapshotDir,
+        SWITCHBOARD_SKIP_LOCAL_BROKER_DEFAULTS: '1',
         SWITCHBOARD_OPENAI_REFRESH_COMMAND_JSON: JSON.stringify(['node', fakeWrapperPath]),
         FAKE_PROVIDER_SYNC_SCENARIO: 'command-failed',
       },
@@ -871,6 +872,7 @@ process.stdout.write(JSON.stringify(payloads[scenario] ?? payloads['full-rate-li
       ['openai', 'google'],
       {
         SWITCHBOARD_SNAPSHOT_DIR: snapshotDir,
+        SWITCHBOARD_SKIP_LOCAL_BROKER_DEFAULTS: '1',
         SWITCHBOARD_OPENAI_REFRESH_COMMAND_JSON: JSON.stringify(['node', fakeWrapperPath]),
         FAKE_PROVIDER_SYNC_SCENARIO: 'command-failed',
       },

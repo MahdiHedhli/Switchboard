@@ -7,6 +7,14 @@ export const defaultLocalOpenaiRefreshCommand = JSON.stringify([
   'node',
   path.join(repoRoot, 'scripts/provider-sync/openai-codex-sync.mjs'),
 ]);
+export const defaultLocalAnthropicRefreshCommand = JSON.stringify([
+  'node',
+  path.join(repoRoot, 'scripts/provider-sync/anthropic-claude-sync.mjs'),
+]);
+export const defaultLocalGoogleRefreshCommand = JSON.stringify([
+  'node',
+  path.join(repoRoot, 'scripts/provider-sync/google-gemini-sync.mjs'),
+]);
 
 function trimToUndefined(value) {
   const trimmed = value?.trim();
@@ -39,6 +47,39 @@ function resolveDefaultOpenaiRefreshCommand(env, repoRootPath) {
     ]);
 }
 
+function providerEnvStem(provider) {
+  return provider.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
+}
+
+function refreshCommandEnvKey(provider) {
+  return `SWITCHBOARD_${providerEnvStem(provider)}_REFRESH_COMMAND_JSON`;
+}
+
+function defaultRefreshCommandEnvKey(provider) {
+  return `SWITCHBOARD_DEFAULT_${providerEnvStem(provider)}_REFRESH_COMMAND_JSON`;
+}
+
+function resolveDefaultProviderRefreshCommand(provider, env, repoRootPath) {
+  const explicitDefault = trimToUndefined(env[defaultRefreshCommandEnvKey(provider)]);
+  if (explicitDefault) {
+    return explicitDefault;
+  }
+
+  if (provider === 'openai') {
+    return resolveDefaultOpenaiRefreshCommand(env, repoRootPath);
+  }
+
+  const scriptByProvider = {
+    anthropic: 'anthropic-claude-sync.mjs',
+    google: 'google-gemini-sync.mjs',
+  };
+
+  return JSON.stringify([
+    'node',
+    path.join(repoRootPath, 'scripts/provider-sync', scriptByProvider[provider]),
+  ]);
+}
+
 export function shouldUseLocalBrokerDefaults(env = process.env) {
   if (trimToUndefined(env.SWITCHBOARD_SKIP_LOCAL_BROKER_DEFAULTS) === '1') {
     return false;
@@ -65,6 +106,12 @@ export async function applyLocalBrokerDefaults(
   if (!trimToUndefined(env.SWITCHBOARD_OPENAI_REFRESH_COMMAND_JSON) && nextEnv.SWITCHBOARD_OPENAI_REFRESH_COMMAND_JSON) {
     env.SWITCHBOARD_OPENAI_REFRESH_COMMAND_JSON = nextEnv.SWITCHBOARD_OPENAI_REFRESH_COMMAND_JSON;
   }
+  if (!trimToUndefined(env.SWITCHBOARD_ANTHROPIC_REFRESH_COMMAND_JSON) && nextEnv.SWITCHBOARD_ANTHROPIC_REFRESH_COMMAND_JSON) {
+    env.SWITCHBOARD_ANTHROPIC_REFRESH_COMMAND_JSON = nextEnv.SWITCHBOARD_ANTHROPIC_REFRESH_COMMAND_JSON;
+  }
+  if (!trimToUndefined(env.SWITCHBOARD_GOOGLE_REFRESH_COMMAND_JSON) && nextEnv.SWITCHBOARD_GOOGLE_REFRESH_COMMAND_JSON) {
+    env.SWITCHBOARD_GOOGLE_REFRESH_COMMAND_JSON = nextEnv.SWITCHBOARD_GOOGLE_REFRESH_COMMAND_JSON;
+  }
 
   return env;
 }
@@ -79,27 +126,27 @@ export async function buildLocalBrokerEnvironment(
     SWITCHBOARD_BROKER_PORT: trimToUndefined(env.SWITCHBOARD_BROKER_PORT) ?? '7007',
   };
 
-  if (trimToUndefined(nextEnv.SWITCHBOARD_OPENAI_REFRESH_COMMAND_JSON)) {
-    return {
-      env: nextEnv,
-      inferredOpenaiRefreshCommand: false,
-    };
-  }
-
   const snapshotDir = resolveSnapshotDir(nextEnv, repoRootPath);
-  const openaiSnapshotFile = path.join(snapshotDir, 'openai.json');
+  const inferredProviderRefreshCommands = [];
 
-  if (await fileExists(openaiSnapshotFile)) {
-    return {
-      env: nextEnv,
-      inferredOpenaiRefreshCommand: false,
-    };
+  for (const provider of ['openai', 'anthropic', 'google']) {
+    const envKey = refreshCommandEnvKey(provider);
+    if (trimToUndefined(nextEnv[envKey])) {
+      continue;
+    }
+
+    const snapshotFile = path.join(snapshotDir, `${provider}.json`);
+    if (await fileExists(snapshotFile)) {
+      continue;
+    }
+
+    nextEnv[envKey] = resolveDefaultProviderRefreshCommand(provider, nextEnv, repoRootPath);
+    inferredProviderRefreshCommands.push(provider);
   }
-
-  nextEnv.SWITCHBOARD_OPENAI_REFRESH_COMMAND_JSON = resolveDefaultOpenaiRefreshCommand(nextEnv, repoRootPath);
 
   return {
     env: nextEnv,
-    inferredOpenaiRefreshCommand: true,
+    inferredOpenaiRefreshCommand: inferredProviderRefreshCommands.includes('openai'),
+    inferredProviderRefreshCommands,
   };
 }

@@ -9,6 +9,8 @@ const repoRoot = fileURLToPath(new URL('..', import.meta.url));
 const {
   applyLocalBrokerDefaults,
   buildLocalBrokerEnvironment,
+  defaultLocalAnthropicRefreshCommand,
+  defaultLocalGoogleRefreshCommand,
   defaultLocalOpenaiRefreshCommand,
 } = await import(path.join(repoRoot, 'scripts/local-broker-launch.mjs'));
 const { defaultOperatorTokenFile } = await import(path.join(repoRoot, 'scripts/operator-token-path.mjs'));
@@ -16,7 +18,10 @@ const {
   parseArgs: parseSaveOperatorTokenArgs,
   saveOperatorTokenUsage,
 } = await import(path.join(repoRoot, 'scripts/save-operator-token.mjs'));
-const { defaultLocalOpenaiRefreshCommandNotice } = await import(path.join(repoRoot, 'scripts/start-local-broker.mjs'));
+const {
+  defaultLocalOpenaiRefreshCommandNotice,
+  defaultLocalProviderRefreshCommandNotice,
+} = await import(path.join(repoRoot, 'scripts/start-local-broker.mjs'));
 const {
   buildRemoteTrustedBrokerEnvironment,
   remoteTrustedBrokerDefaultTokenFile,
@@ -269,14 +274,23 @@ const defaultLaunch = await buildLocalBrokerEnvironment({}, { repoRootPath: repo
 assert.equal(defaultLaunch.env.SWITCHBOARD_BROKER_HOST, '127.0.0.1');
 assert.equal(defaultLaunch.env.SWITCHBOARD_BROKER_PORT, '7007');
 assert.equal(defaultLaunch.env.SWITCHBOARD_OPENAI_REFRESH_COMMAND_JSON, defaultLocalOpenaiRefreshCommand);
+assert.equal(defaultLaunch.env.SWITCHBOARD_ANTHROPIC_REFRESH_COMMAND_JSON, defaultLocalAnthropicRefreshCommand);
+assert.equal(defaultLaunch.env.SWITCHBOARD_GOOGLE_REFRESH_COMMAND_JSON, defaultLocalGoogleRefreshCommand);
 assert.equal(defaultLaunch.inferredOpenaiRefreshCommand, true);
+assert.deepEqual(defaultLaunch.inferredProviderRefreshCommands, ['openai', 'anthropic', 'google']);
 assert.equal(
   defaultLocalOpenaiRefreshCommandNotice,
   'Switchboard local broker is using the default reviewed OpenAI refresh command because no explicit OpenAI adapter env or sanitized openai.json snapshot was found.',
 );
+assert.equal(
+  defaultLocalProviderRefreshCommandNotice,
+  'Switchboard local broker is using default reviewed provider refresh commands for providers without explicit adapter env or sanitized snapshots.',
+);
 assert.equal(defaultLocalOpenaiRefreshCommandNotice.includes(repoRoot), false);
 assert.equal(defaultLocalOpenaiRefreshCommandNotice.includes('/Users/'), false);
 assert.equal(defaultLocalOpenaiRefreshCommandNotice.includes('openai-codex-sync.mjs'), false);
+assert.equal(defaultLocalProviderRefreshCommandNotice.includes(repoRoot), false);
+assert.equal(defaultLocalProviderRefreshCommandNotice.includes('/Users/'), false);
 
 const explicitLaunch = await buildLocalBrokerEnvironment({
   SWITCHBOARD_BROKER_HOST: '127.0.0.1',
@@ -290,15 +304,27 @@ assert.equal(
   '["node","/tmp/custom-openai-sync.mjs"]',
 );
 assert.equal(explicitLaunch.inferredOpenaiRefreshCommand, false);
+assert.deepEqual(explicitLaunch.inferredProviderRefreshCommands, ['anthropic', 'google']);
 
 const inferredOverrideLaunch = await buildLocalBrokerEnvironment({
   SWITCHBOARD_DEFAULT_OPENAI_REFRESH_COMMAND_JSON: '["node","/tmp/reviewed-local-default.mjs"]',
+  SWITCHBOARD_DEFAULT_ANTHROPIC_REFRESH_COMMAND_JSON: '["node","/tmp/reviewed-anthropic-default.mjs"]',
+  SWITCHBOARD_DEFAULT_GOOGLE_REFRESH_COMMAND_JSON: '["node","/tmp/reviewed-google-default.mjs"]',
 }, { repoRootPath: repoRoot });
 assert.equal(
   inferredOverrideLaunch.env.SWITCHBOARD_OPENAI_REFRESH_COMMAND_JSON,
   '["node","/tmp/reviewed-local-default.mjs"]',
 );
+assert.equal(
+  inferredOverrideLaunch.env.SWITCHBOARD_ANTHROPIC_REFRESH_COMMAND_JSON,
+  '["node","/tmp/reviewed-anthropic-default.mjs"]',
+);
+assert.equal(
+  inferredOverrideLaunch.env.SWITCHBOARD_GOOGLE_REFRESH_COMMAND_JSON,
+  '["node","/tmp/reviewed-google-default.mjs"]',
+);
 assert.equal(inferredOverrideLaunch.inferredOpenaiRefreshCommand, true);
+assert.deepEqual(inferredOverrideLaunch.inferredProviderRefreshCommands, ['openai', 'anthropic', 'google']);
 
 const skippedDefaultsEnv = {
   SWITCHBOARD_SKIP_LOCAL_BROKER_DEFAULTS: '1',
@@ -315,6 +341,20 @@ const snapshotLaunch = await buildLocalBrokerEnvironment({
   SWITCHBOARD_SNAPSHOT_DIR: snapshotDir,
 }, { repoRootPath: repoRoot });
 assert.equal(snapshotLaunch.env.SWITCHBOARD_OPENAI_REFRESH_COMMAND_JSON, undefined);
+assert.equal(snapshotLaunch.env.SWITCHBOARD_ANTHROPIC_REFRESH_COMMAND_JSON, defaultLocalAnthropicRefreshCommand);
+assert.equal(snapshotLaunch.env.SWITCHBOARD_GOOGLE_REFRESH_COMMAND_JSON, defaultLocalGoogleRefreshCommand);
 assert.equal(snapshotLaunch.inferredOpenaiRefreshCommand, false);
+assert.deepEqual(snapshotLaunch.inferredProviderRefreshCommands, ['anthropic', 'google']);
+
+await writeFile(path.join(snapshotDir, 'anthropic.json'), '{}\n', { mode: 0o600 });
+await writeFile(path.join(snapshotDir, 'google.json'), '{}\n', { mode: 0o600 });
+const allSnapshotsLaunch = await buildLocalBrokerEnvironment({
+  SWITCHBOARD_SNAPSHOT_DIR: snapshotDir,
+}, { repoRootPath: repoRoot });
+assert.equal(allSnapshotsLaunch.env.SWITCHBOARD_OPENAI_REFRESH_COMMAND_JSON, undefined);
+assert.equal(allSnapshotsLaunch.env.SWITCHBOARD_ANTHROPIC_REFRESH_COMMAND_JSON, undefined);
+assert.equal(allSnapshotsLaunch.env.SWITCHBOARD_GOOGLE_REFRESH_COMMAND_JSON, undefined);
+assert.equal(allSnapshotsLaunch.inferredOpenaiRefreshCommand, false);
+assert.deepEqual(allSnapshotsLaunch.inferredProviderRefreshCommands, []);
 
 console.log('Local broker launch smoke test passed.');

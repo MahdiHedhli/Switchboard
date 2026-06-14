@@ -11,6 +11,8 @@ The repository now includes:
 - snapshot-backed quota refresh from `.switchboard/provider-snapshots/*.json`
 - trusted-command provider refresh via `SWITCHBOARD_<PROVIDER>_REFRESH_COMMAND_JSON` when a reviewed local wrapper can emit sanitized JSON
 - a repo-owned OpenAI/Codex supervisor sync command in `scripts/provider-sync/openai-codex-sync.mjs`
+- repo-owned Anthropic/Claude Code and Google/Gemini sync commands in `scripts/provider-sync/anthropic-claude-sync.mjs` and `scripts/provider-sync/google-gemini-sync.mjs`
+- Anthropic and Google provider sync currently emits sanitized provider status and informational quota coverage; typed quota windows for those providers are not implemented yet
 - a live Codex doctor command in `scripts/codex-doctor.mjs` for current-shell path diagnostics
 - a direct Codex app-server doctor in `scripts/codex-app-server-doctor.mjs` for raw upstream diagnostics before wrapper fallback
 - a combined preflight doctor in `scripts/preflight-doctor.mjs` for rollout-time operator readiness plus raw and wrapped Codex checks
@@ -33,6 +35,7 @@ The repository now includes:
 - a Threatpedia project profile in profiles/threatpedia.json
 - a broker smoke test in `scripts/broker-smoke.mjs`
 - a bind-free Codex wrapper smoke test in `scripts/codex-wrapper-smoke.mjs`
+- bind-free Anthropic and Google wrapper smoke tests in `scripts/anthropic-claude-sync-smoke.mjs` and `scripts/google-gemini-sync-smoke.mjs`
 - a bind-free Codex doctor smoke test in `scripts/codex-doctor-smoke.mjs`
 - a bind-free dashboard composition smoke test in `scripts/dashboard-smoke.mjs`
 - a bind-free broker health composition smoke test in `scripts/health-smoke.mjs`
@@ -68,8 +71,8 @@ Codex should act as Kernel Proxy under human supervision, not as the final trust
 
 1. Keep dependency versions pinned and commit lockfile updates intentionally.
 2. Let routine dependency upgrades sit through a 30-60 day validation window before adoption unless an explicit security fix needs faster action.
-3. Verify Codex app-server availability across desktop, CLI, and non-interactive launch contexts, while keeping the current typed account-only fallback and the safer `codex login status` fallback for earlier app-server failures.
-4. Extend provider-specific wrapper integrations on top of the trusted-command adapter path without persisting raw credentials or exports.
+3. Keep validating Codex app-server availability across desktop, CLI, and non-interactive launch contexts, while keeping the current typed account-only fallback and the safer `codex login status` fallback for earlier app-server failures.
+4. Validate the new Anthropic and Google trusted-command wrappers through broker refresh and UI surfaces, then add typed quota discovery only where provider surfaces expose it safely.
 5. Build approval and review workflows on top of the current scoped auth policy instead of widening raw mutation access.
 6. Dry-run the release checklist and deployment guidance against the first intended operator environments.
 7. Expand the current task-level approval groundwork into richer review actions and stronger operator identity later.

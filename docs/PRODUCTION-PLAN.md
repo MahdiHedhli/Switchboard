@@ -53,10 +53,11 @@ Current progress:
 - snapshot-backed refresh is working
 - trusted-command refresh can now bridge to reviewed local wrappers that emit sanitized JSON
 - a first OpenAI/Codex supervisor wrapper is working on top of that bridge
+- first Anthropic/Claude Code and Google/Gemini wrappers now run through the same trusted-command bridge and emit sanitized provider-status snapshots
 - the Codex wrapper now uses the reviewed local app-server rate-limit surface for plan type, credit metadata, and 5-hour/weekly budget windows
 - source, plan, and credit metadata now surface separately from quota-row notes
 - percentage-window data is now marked as advisory so the planner warns instead of treating it like raw credits
-- remaining follow-up is validating Codex app-server availability across interactive and non-interactive launch contexts and preserving visible fallback diagnostics when typed rate-limit data is unavailable
+- remaining follow-up is validating the Anthropic and Google wrappers against broker/UI refresh paths and preserving visible fallback diagnostics when typed provider quota data is unavailable
 - partial app-server success now preserves typed account metadata even when rate-limit fetch fails
 
 ### Stage 4: Production operations
@@ -193,6 +194,6 @@ Current progress:
 
 ## Current execution focus
 
-1. Verify Codex app-server availability across interactive and non-interactive launch contexts, then extend provider-specific wrapper integrations on top of the trusted-command bridge where safe and reviewed.
+1. Push the Anthropic and Google trusted-command wrappers beyond sanitized status into typed quota discovery only where provider surfaces expose that safely, then validate those paths through broker refresh and UI surfaces.
 2. Evolve the scoped auth policy into fuller approval and review workflows where operator trust needs to be explicit.
 3. Dry-run the operator runbook and release checklist against the first local-only and remote-trusted deployment candidates.

@@ -9,9 +9,13 @@ const { AdapterRegistry } = await import(path.join(repoRoot, 'apps/broker/dist/i
 const { applyLocalBrokerDefaults } = await import(path.join(repoRoot, 'scripts/local-broker-launch.mjs'));
 
 const commandEnvKey = 'SWITCHBOARD_OPENAI_REFRESH_COMMAND_JSON';
+const anthropicCommandEnvKey = 'SWITCHBOARD_ANTHROPIC_REFRESH_COMMAND_JSON';
+const googleCommandEnvKey = 'SWITCHBOARD_GOOGLE_REFRESH_COMMAND_JSON';
 const defaultCommandEnvKey = 'SWITCHBOARD_DEFAULT_OPENAI_REFRESH_COMMAND_JSON';
 const brokerHostEnvKey = 'SWITCHBOARD_BROKER_HOST';
 const previousCommand = process.env[commandEnvKey];
+const previousAnthropicCommand = process.env[anthropicCommandEnvKey];
+const previousGoogleCommand = process.env[googleCommandEnvKey];
 const previousDefaultCommand = process.env[defaultCommandEnvKey];
 const previousBrokerHost = process.env[brokerHostEnvKey];
 
@@ -73,6 +77,8 @@ try {
   );
 
   delete process.env[commandEnvKey];
+  delete process.env[anthropicCommandEnvKey];
+  delete process.env[googleCommandEnvKey];
   process.env[defaultCommandEnvKey] = JSON.stringify(['node', '/tmp/inferred-openai-sync.mjs']);
   process.env[brokerHostEnvKey] = '127.0.0.1';
   await applyLocalBrokerDefaults(process.env, { repoRootPath: repoRoot });
@@ -91,6 +97,8 @@ try {
 
   delete process.env[defaultCommandEnvKey];
   process.env[commandEnvKey] = JSON.stringify(['node', '/tmp/fake-openai-sync.mjs']);
+  delete process.env[anthropicCommandEnvKey];
+  delete process.env[googleCommandEnvKey];
   const readyStatuses = await registry.listForProfile(profileWithProviders(['openai', 'anthropic', 'google']));
   const readyByProvider = Object.fromEntries(readyStatuses.map((entry) => [entry.provider, entry]));
 
@@ -133,6 +141,18 @@ try {
     delete process.env[commandEnvKey];
   } else {
     process.env[commandEnvKey] = previousCommand;
+  }
+
+  if (previousAnthropicCommand === undefined) {
+    delete process.env[anthropicCommandEnvKey];
+  } else {
+    process.env[anthropicCommandEnvKey] = previousAnthropicCommand;
+  }
+
+  if (previousGoogleCommand === undefined) {
+    delete process.env[googleCommandEnvKey];
+  } else {
+    process.env[googleCommandEnvKey] = previousGoogleCommand;
   }
 
   if (previousDefaultCommand === undefined) {

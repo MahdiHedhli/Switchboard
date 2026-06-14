@@ -302,4 +302,143 @@ assert.equal(
   'openai refreshed Codex Supervisor (Pro) · app-server rate-limits available',
 );
 
+const anthropicStatusSummary = buildProviderRefreshSummary({
+  provider: 'anthropic',
+  kind: 'trusted-command',
+  refreshedAt: '2026-04-22T07:30:00.000Z',
+  subscriptions: [
+    {
+      id: 'anthropic-claude-subscription',
+      provider: 'anthropic',
+      displayName: 'Claude Code (Max)',
+      authMode: 'subscription',
+      owner: 'operator',
+      syncMethod: 'provider',
+      lastRefreshedAt: '2026-04-22T07:30:00.000Z',
+      signals: [
+        { id: 'source', label: 'source', value: 'claude auth status' },
+        { id: 'auth_method', label: 'auth-method', value: 'claude.ai' },
+        { id: 'subscription', label: 'subscription', value: 'Max' },
+      ],
+      quotas: [
+        {
+          provider: 'anthropic',
+          modelId: 'claude-code',
+          displayName: 'Claude Code',
+          availability: 'available',
+          authMode: 'subscription',
+          usageUnit: 'unknown',
+          source: 'cli',
+          confidence: 'high',
+          interpretation: 'informational',
+        },
+      ],
+    },
+  ],
+});
+
+assert.deepEqual(anthropicStatusSummary, {
+  provider: 'anthropic',
+  kind: 'trusted-command',
+  refreshedAt: '2026-04-22T07:30:00.000Z',
+  accounts: 1,
+  accountDisplayNames: ['Claude Code (Max)'],
+  latestAccountRefreshedAt: '2026-04-22T07:30:00.000Z',
+  accountSyncMethods: ['provider'],
+  degraded: false,
+  syncModes: ['provider-status'],
+  syncBadges: [],
+  rateLimitHosts: [],
+  openaiAuth: [],
+  quotaCoverage: 'informational_only',
+  quotaModels: 1,
+  typedQuotaModels: 0,
+});
+assert.equal(
+  formatProviderSyncSummaryDisplayMessage(anthropicStatusSummary),
+  'provider status available',
+);
+assert.deepEqual(
+  formatProviderSyncSummaryPills(anthropicStatusSummary),
+  [
+    'account sync: provider',
+    'mode: provider-status',
+    'quota: informational_only',
+    'typed quota models: 0/1',
+  ],
+);
+assert.equal(
+  formatProviderRefreshSummaryMessage(anthropicStatusSummary),
+  'anthropic refreshed Claude Code (Max) · provider status available · informational quota only',
+);
+
+const googleLiveProbeSummary = buildProviderRefreshSummary({
+  provider: 'google',
+  kind: 'trusted-command',
+  refreshedAt: '2026-04-22T07:45:00.000Z',
+  subscriptions: [
+    {
+      id: 'google-gemini-cli',
+      provider: 'google',
+      displayName: 'Gemini CLI',
+      authMode: 'subscription',
+      owner: 'operator',
+      syncMethod: 'provider',
+      lastRefreshedAt: '2026-04-22T07:45:00.000Z',
+      signals: [
+        { id: 'source', label: 'source', value: 'gemini live probe' },
+        { id: 'cli', label: 'cli', value: '0.38.2' },
+      ],
+      quotas: [
+        {
+          provider: 'google',
+          modelId: 'gemini-cli',
+          displayName: 'Gemini CLI',
+          availability: 'available',
+          authMode: 'subscription',
+          usageUnit: 'unknown',
+          source: 'cli',
+          confidence: 'high',
+          interpretation: 'informational',
+        },
+      ],
+    },
+  ],
+});
+
+assert.deepEqual(googleLiveProbeSummary, {
+  provider: 'google',
+  kind: 'trusted-command',
+  refreshedAt: '2026-04-22T07:45:00.000Z',
+  accounts: 1,
+  accountDisplayNames: ['Gemini CLI'],
+  latestAccountRefreshedAt: '2026-04-22T07:45:00.000Z',
+  accountSyncMethods: ['provider'],
+  degraded: false,
+  syncModes: ['provider-live-probe'],
+  syncBadges: [],
+  rateLimitHosts: [],
+  openaiAuth: [],
+  quotaCoverage: 'informational_only',
+  quotaModels: 1,
+  typedQuotaModels: 0,
+});
+assert.equal(
+  formatProviderSyncSummaryDisplayMessage(googleLiveProbeSummary),
+  'provider live probe available',
+);
+assert.deepEqual(
+  formatProviderSyncSummaryPills(googleLiveProbeSummary),
+  [
+    'account sync: provider',
+    'mode: provider-live-probe',
+    'quota: informational_only',
+    'typed quota models: 0/1',
+  ],
+);
+assert.equal(
+  formatProviderRefreshSummaryMessage(googleLiveProbeSummary),
+  'google refreshed Gemini CLI · provider live probe available · informational quota only',
+);
+
 console.log('Refresh smoke test passed.');

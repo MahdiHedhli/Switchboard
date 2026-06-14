@@ -28,7 +28,7 @@ npm run doctor:operator -- local-only
 npm run verify:control-plane
 ```
 
-`doctor:preflight -- local-only ...` now mirrors the same default OpenAI launch behavior as `npm run dev:broker`: if no explicit OpenAI adapter env is set and no `openai.json` snapshot exists, it evaluates the reviewed repo-owned OpenAI/Codex bridge instead of treating local-only as snapshot-missing by default.
+`doctor:preflight -- local-only ...` now mirrors the same default provider launch behavior as `npm run dev:broker`: if no explicit provider adapter env is set and no matching `<provider>.json` snapshot exists, it evaluates the reviewed repo-owned OpenAI/Codex, Anthropic/Claude, and Google/Gemini bridges instead of treating local-only as snapshot-missing by default.
 
 `doctor:providers -- openai` and `doctor:provider-sync -- openai` now follow that same local-only default too, so standalone provider diagnostics stay aligned with the reviewed loopback broker launch instead of reporting false snapshot-missing drift.
 When that inferred local OpenAI bridge is healthy, the direct doctor messages also stay concrete instead of generic: `doctor:providers -- openai` reports `trusted_command_ready (unvalidated)`, and `doctor:provider-sync -- openai` reports `app-server rate-limits available` when the bridge returned fully typed quota windows.
@@ -44,12 +44,12 @@ npm run dev:broker
 `npm run smoke:broker` now exercises the live broker route contract plus healthy fully typed, healthy mixed, and degraded authorized OpenAI refresh responses, and it also follows those OpenAI paths through persisted `/dashboard`, raw `/state`, and the on-disk `threatpedia.json` state file. That includes the healthy fully typed, healthy mixed, and degraded partial-app-server paths on both the local and remote file-backed operator-token branches, and those persistence checks also confirm the saved state file stays owner-only at `0600`. That makes it the unrestricted check that proves the real HTTP broker keeps the same `chatgpt.com`, `OpenAI auth required`, and quota-quality detail already covered by the bind-free refresh, dashboard, and state smokes.
 At the higher-level rollout layer, `npm run smoke:preflight` and `npm run smoke:doctor-contracts` now also explicitly cover that healthy mixed `1/2` OpenAI/Codex detail on both local-only and remote-trusted `SWITCHBOARD_OPERATOR_TOKEN_FILE` shells, including the richer nested raw `userAgent` / `accountType` / `plan` / `endpoint` fields and wrapped `account` / `refreshedAt` / `refreshedDisplay` / `plan` / `credits` fields, so the human and JSON preflight surfaces are checked too instead of only the persisted broker state.
 
-`npm run dev:broker`, `npm --workspace @switchboard/broker run dev`, and `cd apps/broker && npm run dev` now all use the same reviewed local launcher. It auto-wires the repo-owned OpenAI/Codex refresh bridge for local loopback runs when both of these are true:
-- `SWITCHBOARD_OPENAI_REFRESH_COMMAND_JSON` is not already set
-- `.switchboard/provider-snapshots/openai.json` does not exist
+`npm run dev:broker`, `npm --workspace @switchboard/broker run dev`, and `cd apps/broker && npm run dev` now all use the same reviewed local launcher. It auto-wires the repo-owned OpenAI/Codex, Anthropic/Claude, and Google/Gemini refresh bridges for local loopback runs when both of these are true:
+- `SWITCHBOARD_<PROVIDER>_REFRESH_COMMAND_JSON` is not already set
+- `.switchboard/provider-snapshots/<provider>.json` does not exist
 
-That keeps the local HTTP path from silently falling back to a missing `openai.json` snapshot after a restart when you intended to keep using the reviewed trusted-command adapter.
-When that fallback is inferred, the launcher prints one sanitized notice instead of echoing the local command path it selected.
+That keeps the local HTTP path from silently falling back to a missing provider snapshot after a restart when you intended to keep using the reviewed trusted-command adapter.
+When those fallbacks are inferred, the launcher prints a sanitized notice instead of echoing the local command paths it selected.
 
 The broker `/healthz` payload and the Operator session now also surface the broker token source (`env`, `file`, `direct`, or `unset`) with a basename-only token-file label when available, so you can distinguish broker-shell token wiring from the browser-only UI token cache without dropping straight to the doctors.
 They also surface sanitized token-file wiring problems like insecure permissions or an insecure default `.switchboard` token directory, so a broken `SWITCHBOARD_OPERATOR_TOKEN_FILE` no longer looks like a silent `operatorTokenConfigured=false`.
@@ -169,6 +169,37 @@ npm run smoke:codex-doctor
 ```
 
 If live rate-limit windows are unavailable in the current launch context, the wrapper should still surface a sanitized source/rate-limit signal instead of pretending the richer path succeeded.
+
+## Anthropic and Google provider refresh
+
+For the current Anthropic/Claude and Google/Gemini paths:
+
+```bash
+export SWITCHBOARD_ANTHROPIC_REFRESH_COMMAND_JSON="[\"node\",\"$PWD/scripts/provider-sync/anthropic-claude-sync.mjs\"]"
+export SWITCHBOARD_GOOGLE_REFRESH_COMMAND_JSON="[\"node\",\"$PWD/scripts/provider-sync/google-gemini-sync.mjs\"]"
+```
+
+Optional local client path overrides:
+
+```bash
+export CLAUDE_CLI_PATH="/absolute/path/to/claude"
+export GEMINI_CLI_PATH="/absolute/path/to/gemini"
+```
+
+Validation:
+
+```bash
+npm run doctor:providers -- anthropic google
+npm run doctor:provider-sync -- anthropic google
+npm run sync:anthropic
+npm run sync:google
+npm run smoke:anthropic
+npm run smoke:google
+```
+
+The Anthropic wrapper reads `claude --version` plus `claude auth status --json` when available, then emits only sanitized account status, auth method, subscription tier, CLI version, and informational quota coverage. It must not emit email addresses, organization identifiers, raw auth output, tokens, cookies, or provider cache data.
+
+The Google wrapper checks the installed Gemini CLI version by default and emits sanitized informational status only. `SWITCHBOARD_GOOGLE_LIVE_PROBE=1` enables an opt-in live prompt probe for shells where a real provider call is acceptable; keep it disabled by default because it may consume provider quota. These wrappers should be treated as provider-status integrations until typed Anthropic or Google quota surfaces are available and reviewed.
 
 `doctor:providers` validates provider wiring without opening local ports or executing provider sync commands:
 - trusted-command providers report whether the JSON argv wiring is valid
