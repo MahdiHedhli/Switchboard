@@ -4,6 +4,7 @@ coverage/
 *.log
 .env
 .env.*
+.switchboard/
 .DS_Store
 .vscode/
 .idea/

@@ -1,0 +1,27 @@
+{
+  "id": "fixture-valid",
+  "name": "Fixture Valid",
+  "description": "Valid profile fixture for loader smoke tests.",
+  "repos": [
+    {
+      "id": "main",
+      "path": "example.com/private/repo",
+      "visibility": "private",
+      "role": "working"
+    }
+  ],
+  "roles": [
+    {
+      "id": "operator",
+      "name": "Operator",
+      "provider": "openai",
+      "defaultModelId": "codex",
+      "responsibilities": [
+        "routing"
+      ],
+      "canWrite": true,
+      "canReview": true,
+      "canApprove": false
+    }
+  ]
+}

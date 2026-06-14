@@ -19,7 +19,7 @@
   "roles": [
     {
       "id": "kernel-proxy",
-      "name": "Kernel Proxy",
+      "name": "Kernel K",
       "provider": "openai",
       "defaultModelId": "codex",
       "responsibilities": [

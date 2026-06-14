@@ -1,0 +1,27 @@
+{
+  "id": "fixture-duplicate-profile",
+  "name": "Fixture Duplicate Profile B",
+  "description": "Second invalid fixture with the same profile id.",
+  "repos": [
+    {
+      "id": "secondary",
+      "path": "example.com/private/repo-b",
+      "visibility": "private",
+      "role": "working"
+    }
+  ],
+  "roles": [
+    {
+      "id": "operator-b",
+      "name": "Operator B",
+      "provider": "google",
+      "defaultModelId": "gemini-cli",
+      "responsibilities": [
+        "review"
+      ],
+      "canWrite": false,
+      "canReview": true,
+      "canApprove": true
+    }
+  ]
+}
