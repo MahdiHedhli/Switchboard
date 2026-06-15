@@ -2,12 +2,14 @@ import type { ProjectProfile, ProviderId, SubscriptionAccount } from '@switchboa
 import { anthropicAdapter } from './anthropic.js';
 import { googleAdapter } from './google.js';
 import { openaiAdapter } from './openai.js';
+import { xaiAdapter } from './xai.js';
 import { AdapterRefreshError, type ProviderAdapterStatus, type ProviderRefreshResult, type QuotaAdapter } from './types.js';
 
 const registeredAdapters: Record<string, QuotaAdapter> = {
   openai: openaiAdapter,
   anthropic: anthropicAdapter,
   google: googleAdapter,
+  xai: xaiAdapter,
 };
 
 function uniqueProviders(profile: ProjectProfile): ProviderId[] {
