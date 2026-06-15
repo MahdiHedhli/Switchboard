@@ -79,6 +79,12 @@ export interface ModelReservation {
   estimatedCost: number;
   usageUnit: UsageUnit;
   reason: string;
+  /**
+   * How this reservation was produced, for observability. Absent on
+   * legacy/hand-authored reservations so existing data is byte-for-byte
+   * unaffected; the selector stamps `selector`, manual pins stamp `pin`.
+   */
+  source?: 'selector' | 'pin' | 'explicit';
 }
 
 export interface AgentRole {
@@ -127,6 +133,17 @@ export interface SwitchboardTask {
   reservations?: ModelReservation[];
   artifacts?: TaskArtifact[];
   dependsOn?: string[];
+  /**
+   * Declared class of work. The selector resolves this into a concrete
+   * ModelReservation before the planner validates coverage.
+   */
+  taskClass?: string;
+  /**
+   * Manual "force this model" pin. Bypasses selection (the rare override that
+   * replaces the old fallbackProvider/fallbackModelId idea) but is still
+   * validated by the planner like any other reservation.
+   */
+  modelPin?: { provider: ProviderId; modelId: string };
 }
 
 export interface ProjectProfile {
@@ -140,6 +157,17 @@ export interface ProjectProfile {
     role: 'working' | 'publish' | 'mixed';
   }>;
   roles: AgentRole[];
+  /**
+   * Declared classes of work the selector can resolve into reservations.
+   * Optional so existing profiles keep loading; Slice 5 populates real values.
+   */
+  taskClasses?: TaskClass[];
+  /**
+   * Profile-wide default cost-basis strategy. A per-task-class
+   * `selectionPolicyOverride` takes precedence. When absent the selector falls
+   * back to DEFAULT_SELECTION_POLICY.
+   */
+  selectionPolicy?: CostBasisStrategy;
 }
 
 export interface ProjectProfileSummary {
@@ -345,4 +373,99 @@ export interface UpdateTaskInput {
   approvalRequired?: boolean;
   approvedBy?: string | null;
   approvalNote?: string | null;
+}
+
+// ---------------------------------------------------------------------------
+// Model selection (cost-aware, capability-matched routing)
+//
+// The selector runs as a discrete stage BEFORE planTasks: it resolves a task's
+// declared task-class into a concrete ModelReservation. The planner then
+// validates coverage exactly as it does today. Selection answers "who should do
+// this"; planning answers "can they, right now". See docs/SELECTION.md.
+// ---------------------------------------------------------------------------
+
+/**
+ * Coarse, hand-assigned capability tiers. Deliberately NOT a benchmark matrix:
+ * `heavy` is reserved for judgment-heavy work (attribution, anything touching
+ * corpus accuracy), `light` for mechanical drafting/formatting, `standard` in
+ * between. The selector always picks the cheapest model that clears the floor,
+ * so the floor is the only thing protecting quality.
+ */
+export type ModelCapabilityTier = 'heavy' | 'standard' | 'light';
+
+/**
+ * Cost-basis strategy for the selector.
+ * - `subscription-first`: marginal-cost-0 subscription models beat metered API
+ *   calls while they remain available; no scarcity weighting.
+ * - `subscription-first-scarcity-preserving`: as above, but a near-exhausted
+ *   premium subscription is progressively deprioritized so a cheaper capable
+ *   model can win before the subscription is fully spent.
+ */
+export type CostBasisStrategy = 'subscription-first' | 'subscription-first-scarcity-preserving';
+
+/**
+ * Pricing for a catalog entry, discriminated on the cost-basis auth mode.
+ * For non-hybrid rows this matches the entry's `authMode`; a `hybrid` provider
+ * row declares whichever cost basis it should be routed on. API rows carry a
+ * real per-unit cost; subscription rows have marginal cost 0 and derive scarcity
+ * from the live quota snapshot's remaining/limit.
+ */
+export type ModelPricing =
+  | { authMode: 'api'; unit: UsageUnit; costPerUnit: number }
+  | { authMode: 'subscription'; drawsFromQuota: true };
+
+export type ModelCatalogStatus = 'active' | 'placeholder';
+
+/**
+ * A fully-resolved catalog entry. `active` rows are routable and carry verified
+ * tier + pricing. `placeholder` rows are never routed on — the selector excludes
+ * them and the catalog doctor reports them until an operator fills real values.
+ */
+export interface ModelCatalogEntry {
+  provider: ProviderId;
+  modelId: string;
+  displayName: string;
+  tier: ModelCapabilityTier;
+  authMode: AuthMode;
+  pricing: ModelPricing;
+  status: ModelCatalogStatus;
+}
+
+/**
+ * A declared class of work.
+ *
+ * `minimumTier` is optional: a class that needs no model (e.g. local
+ * `validation`) omits it and is skipped by the selector entirely. When present,
+ * the selector picks the cheapest active model whose tier clears it.
+ */
+export interface TaskClass {
+  id: string;
+  minimumTier?: ModelCapabilityTier;
+  selectionPolicyOverride?: CostBasisStrategy;
+}
+
+export type SelectionWarningCode =
+  | 'selection_unresolved'
+  | 'selection_placeholder_skipped';
+
+export interface SelectionWarning {
+  code: SelectionWarningCode;
+  taskId: string;
+  message: string;
+  /** Task-class involved in the routing decision, for observability. */
+  taskClass?: string;
+  /** Provider/modelId rows excluded as placeholders, for `selection_placeholder_skipped`. */
+  excluded?: Array<{ provider: ProviderId; modelId: string }>;
+}
+
+/**
+ * Output of the selector stage. `tasks` carries selector/pin reservations
+ * applied; tasks the selector did not touch pass through unchanged. The caller
+ * feeds these tasks into the existing planner, which is solely responsible for
+ * coverage. Selection warnings are intentionally a SEPARATE union from
+ * PlannerWarning so the planner's logic is untouched.
+ */
+export interface SelectionResult {
+  tasks: SwitchboardTask[];
+  warnings: SelectionWarning[];
 }
