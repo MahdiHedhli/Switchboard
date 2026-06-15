@@ -469,3 +469,19 @@ export interface SelectionResult {
   tasks: SwitchboardTask[];
   warnings: SelectionWarning[];
 }
+
+/**
+ * Input to the selector stage. Mirrors PlannerContext but additionally carries
+ * the routable catalog. `catalog` holds ONLY normalized `active` entries (the
+ * caller passes `normalizeCatalog(file).active`); `placeholders` lists rows the
+ * normalizer excluded so the selector can surface a `selection_placeholder_skipped`
+ * hint when a class would otherwise be resolvable. The selector never mutates
+ * its inputs.
+ */
+export interface SelectionContext {
+  project: ProjectProfile;
+  subscriptions: SubscriptionAccount[];
+  tasks: SwitchboardTask[];
+  catalog: ModelCatalogEntry[];
+  placeholders?: Array<{ provider: ProviderId; modelId: string }>;
+}

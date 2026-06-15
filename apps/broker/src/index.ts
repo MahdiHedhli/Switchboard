@@ -30,6 +30,7 @@ export * from './failure-response.js';
 export * from './health.js';
 export * from './mutation-authorization.js';
 export * from './planner.js';
+export * from './selector.js';
 export * from './profile-loader.js';
 export * from './profile-resolution.js';
 export * from './profiles-snapshot.js';
