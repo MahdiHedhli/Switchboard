@@ -8,3 +8,22 @@ coverage/
 .DS_Store
 .vscode/
 .idea/
+
+# --- secrets & credentials (defense-in-depth) ---
+!.env.example
+*.pem
+*.key
+*.p12
+id_rsa*
+*_rsa
+credentials.json
+
+# --- macOS / editor artifacts ---
+.DS_Store?
+._*
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+Icon?
+Thumbs.db
