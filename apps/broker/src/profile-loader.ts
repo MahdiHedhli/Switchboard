@@ -1,6 +1,12 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import type { AgentRole, ProjectProfile } from '@switchboard/core';
+import type {
+  AgentRole,
+  CostBasisStrategy,
+  ModelCapabilityTier,
+  ProjectProfile,
+  TaskClass,
+} from '@switchboard/core';
 import {
   assertKnownKeys,
   expectArray,
@@ -14,6 +20,8 @@ import {
 
 const repoVisibilities = ['public', 'private'] as const;
 const repoRoles = ['working', 'publish', 'mixed'] as const;
+const capabilityTiers = ['heavy', 'standard', 'light'] as const;
+const selectionPolicies = ['subscription-first', 'subscription-first-scarcity-preserving'] as const;
 
 function parseRepo(value: unknown, context: string): ProjectProfile['repos'][number] {
   const record = expectRecord(value, context);
@@ -51,6 +59,33 @@ function parseRole(value: unknown, context: string): AgentRole {
   };
 }
 
+/**
+ * Parse a declared task-class. `minimumTier` is optional: a class that needs no
+ * model (e.g. local `validation`) omits it and the selector skips it entirely.
+ * The loader NEVER fabricates a tier — an absent tier stays absent.
+ */
+function parseTaskClass(value: unknown, context: string): TaskClass {
+  const record = expectRecord(value, context);
+  assertKnownKeys(record, ['id', 'minimumTier', 'selectionPolicyOverride'], context);
+
+  const taskClass: TaskClass = {
+    id: expectIdentifier(record.id, `${context}.id`),
+  };
+
+  if (record.minimumTier !== undefined) {
+    taskClass.minimumTier = expectEnum(record.minimumTier, capabilityTiers, `${context}.minimumTier`) as ModelCapabilityTier;
+  }
+  if (record.selectionPolicyOverride !== undefined) {
+    taskClass.selectionPolicyOverride = expectEnum(
+      record.selectionPolicyOverride,
+      selectionPolicies,
+      `${context}.selectionPolicyOverride`,
+    ) as CostBasisStrategy;
+  }
+
+  return taskClass;
+}
+
 function ensureUniqueIds(entries: Array<{ id: string }>, context: string): void {
   const seen = new Set<string>();
 
@@ -71,7 +106,7 @@ function ensureNonEmpty(entries: unknown[], context: string): void {
 
 function parseProfile(raw: unknown, source: string): ProjectProfile {
   const record = expectRecord(raw, source);
-  assertKnownKeys(record, ['id', 'name', 'description', 'repos', 'roles'], source);
+  assertKnownKeys(record, ['id', 'name', 'description', 'repos', 'roles', 'taskClasses', 'selectionPolicy'], source);
   const repos = expectArray(record.repos, `${source}.repos`).map((entry, index) =>
     parseRepo(entry, `${source}.repos[${index}]`),
   );
@@ -84,13 +119,31 @@ function parseProfile(raw: unknown, source: string): ProjectProfile {
   ensureUniqueIds(repos, `${source}.repos`);
   ensureUniqueIds(roles, `${source}.roles`);
 
-  return {
+  const profile: ProjectProfile = {
     id: expectIdentifier(record.id, `${source}.id`),
     name: expectString(record.name, `${source}.name`),
     description: expectString(record.description, `${source}.description`),
     repos,
     roles,
   };
+
+  if (record.taskClasses !== undefined) {
+    const taskClasses = expectArray(record.taskClasses, `${source}.taskClasses`).map((entry, index) =>
+      parseTaskClass(entry, `${source}.taskClasses[${index}]`),
+    );
+    ensureUniqueIds(taskClasses, `${source}.taskClasses`);
+    profile.taskClasses = taskClasses;
+  }
+
+  if (record.selectionPolicy !== undefined) {
+    profile.selectionPolicy = expectEnum(
+      record.selectionPolicy,
+      selectionPolicies,
+      `${source}.selectionPolicy`,
+    ) as CostBasisStrategy;
+  }
+
+  return profile;
 }
 
 export async function loadProjectProfiles(profilesDir: string): Promise<ProjectProfile[]> {
