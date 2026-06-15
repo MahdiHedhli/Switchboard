@@ -58,6 +58,37 @@
       "canWrite": true,
       "canReview": true,
       "canApprove": false
+    },
+    {
+      "id": "grok-failover",
+      "name": "Grok",
+      "provider": "xai",
+      "defaultModelId": "grok-cli",
+      "responsibilities": [
+        "failover drafting",
+        "availability backstop"
+      ],
+      "canWrite": true,
+      "canReview": false,
+      "canApprove": false
+    }
+  ],
+  "selectionPolicy": "subscription-first-scarcity-preserving",
+  "taskClasses": [
+    {
+      "id": "article-draft",
+      "minimumTier": "light"
+    },
+    {
+      "id": "article-review",
+      "minimumTier": "standard"
+    },
+    {
+      "id": "attribution",
+      "minimumTier": "heavy"
+    },
+    {
+      "id": "validation"
     }
   ]
 }

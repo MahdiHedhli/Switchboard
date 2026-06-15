@@ -24,7 +24,7 @@ try {
 
   assert.equal(seeded.profile.id, 'threatpedia');
   assert.equal(seeded.tasks.length, 3);
-  assert.equal(seeded.subscriptions.length, 3);
+  assert.equal(seeded.subscriptions.length, 4);
 
   const stateDirStat = await stat(stateDir);
   assert.equal(stateDirStat.mode & 0o777, 0o700);
@@ -186,7 +186,7 @@ try {
 
   assert.deepEqual(
     providerRefresh.subscriptions.map((account) => account.provider),
-    ['anthropic', 'google', 'openai'],
+    ['anthropic', 'google', 'openai', 'xai'],
   );
   const refreshedOpenAI = providerRefresh.subscriptions.find((account) => account.provider === 'openai');
   assert.equal(refreshedOpenAI?.id, 'openai-codex-chatgpt');
