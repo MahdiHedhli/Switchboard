@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "provider": "openai",
+      "modelId": "codex",
+      "displayName": "OpenAI Codex (KK orchestrator)",
+      "tier": null,
+      "authMode": "subscription",
+      "pricing": { "authMode": "subscription", "drawsFromQuota": true },
+      "status": "placeholder",
+      "operatorNote": "Subscription model drawn from the OpenAI quota snapshot. Assign a real tier (heavy|standard|light) from operator judgement, then set status=active to make it routable. The selector refuses to route placeholder rows."
+    },
+    {
+      "provider": "anthropic",
+      "modelId": "claude-code",
+      "displayName": "Anthropic Claude Code (DM implementer)",
+      "tier": null,
+      "authMode": "subscription",
+      "pricing": { "authMode": "subscription", "drawsFromQuota": true },
+      "status": "placeholder",
+      "operatorNote": "Subscription model drawn from the Anthropic quota snapshot. Assign a real tier (heavy|standard|light) from operator judgement, then set status=active to make it routable. The selector refuses to route placeholder rows."
+    },
+    {
+      "provider": "google",
+      "modelId": "gemini-cli",
+      "displayName": "Google Gemini CLI (Penfold reviewer)",
+      "tier": null,
+      "authMode": "subscription",
+      "pricing": { "authMode": "subscription", "drawsFromQuota": true },
+      "status": "placeholder",
+      "operatorNote": "Subscription model drawn from the Google quota snapshot. Assign a real tier (heavy|standard|light) from operator judgement, then set status=active to make it routable. Note: the hosted Gemini Code Assist and consumer Gemini CLI backend are scheduled to shut down by 2026-07-17; ensure a routable failover exists before then. The selector refuses to route placeholder rows."
+    }
+  ]
+}
