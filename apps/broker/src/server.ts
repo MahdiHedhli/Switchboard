@@ -13,7 +13,8 @@ import { AdapterRegistry, collectSubscriptions } from './adapters/registry.js';
 import { AdapterRefreshError } from './adapters/types.js';
 import { buildAdapterRefreshConflictDetail } from './adapter-conflict.js';
 import { BrokerAuthPolicy, type BrokerMutationScope } from './auth-policy.js';
-import { buildDashboardSnapshot } from './dashboard.js';
+import { buildDashboardSnapshot, type DashboardCatalog } from './dashboard.js';
+import { loadDashboardCatalog } from './catalog-loader.js';
 import {
   buildMethodNotAllowedResponse,
 } from './error-response.js';
@@ -353,6 +354,14 @@ function authorizeMutationRoute(
 export function createBrokerServer(config: BrokerRuntimeConfig): BrokerServer {
   const stateStore = new FileStateStore(config.stateDir);
   const adapterRegistry = new AdapterRegistry(config.snapshotDir);
+  const catalogPath = path.join(repoRoot, 'config/model-catalog.json');
+  let dashboardCatalogPromise: Promise<DashboardCatalog> | null = null;
+  const getDashboardCatalog = (): Promise<DashboardCatalog> => {
+    if (!dashboardCatalogPromise) {
+      dashboardCatalogPromise = loadDashboardCatalog(catalogPath);
+    }
+    return dashboardCatalogPromise;
+  };
   const authPolicy = new BrokerAuthPolicy({
     host: config.host,
     operatorToken: config.operatorToken,
@@ -414,7 +423,7 @@ export function createBrokerServer(config: BrokerRuntimeConfig): BrokerServer {
             return;
           }
 
-          json(response, 200, buildDashboardSnapshot(await stateStore.load(profile)));
+          json(response, 200, buildDashboardSnapshot(await stateStore.load(profile), await getDashboardCatalog()));
           return;
         case 'project-adapters':
           if (method !== 'GET') {
@@ -437,7 +446,7 @@ export function createBrokerServer(config: BrokerRuntimeConfig): BrokerServer {
           {
             const payload = await readJsonRequestBody(request);
             const nextState = await stateStore.createTask(profile, parseTaskInput(payload));
-            json(response, 201, buildDashboardSnapshot(nextState));
+            json(response, 201, buildDashboardSnapshot(nextState, await getDashboardCatalog()));
           }
           return;
         case 'project-task':
@@ -458,7 +467,7 @@ export function createBrokerServer(config: BrokerRuntimeConfig): BrokerServer {
           {
             const payload = await readJsonRequestBody(request);
             const nextState = await stateStore.updateTask(profile, route.taskId, parseTaskUpdateInput(payload));
-            json(response, 200, buildDashboardSnapshot(nextState));
+            json(response, 200, buildDashboardSnapshot(nextState, await getDashboardCatalog()));
           }
           return;
         case 'project-subscriptions':
@@ -475,7 +484,7 @@ export function createBrokerServer(config: BrokerRuntimeConfig): BrokerServer {
             const payload = expectRecord(await readJsonRequestBody(request), 'payload');
             const subscriptions = parseSubscriptions(payload.subscriptions);
             const nextState = await stateStore.replaceSubscriptions(profile, subscriptions);
-            json(response, 200, buildDashboardSnapshot(nextState));
+            json(response, 200, buildDashboardSnapshot(nextState, await getDashboardCatalog()));
           }
           return;
         case 'project-subscriptions-refresh':
@@ -497,7 +506,7 @@ export function createBrokerServer(config: BrokerRuntimeConfig): BrokerServer {
               results.map((result) => result.provider),
               collectSubscriptions(results),
             );
-            json(response, 200, buildProjectRefreshSnapshot(nextState, results));
+            json(response, 200, buildProjectRefreshSnapshot(nextState, results, await getDashboardCatalog()));
           }
           return;
         default:
