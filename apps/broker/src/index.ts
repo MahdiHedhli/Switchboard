@@ -24,6 +24,7 @@ export * from './adapter-conflict.js';
 export * from './adapters-snapshot.js';
 export * from './auth-policy.js';
 export * from './dashboard.js';
+export * from './catalog-loader.js';
 export * from './error-response.js';
 export * from './error-http-response.js';
 export * from './failure-response.js';
