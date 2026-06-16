@@ -16,6 +16,9 @@ async function runDoctor(fakeCodexPath, scenario, mode, json = false) {
       cwd: repoRoot,
       env: {
         ...process.env,
+        // Pin the timezone so the doctor's toLocaleString() reset-time output is
+        // deterministic regardless of the host TZ (was the §9 UTC-vs-ET flake).
+        TZ: 'America/New_York',
         CODEX_CLI_PATH: fakeCodexPath,
         FAKE_CODEX_SCENARIO: scenario,
       },
