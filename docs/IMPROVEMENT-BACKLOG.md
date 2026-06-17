@@ -15,7 +15,7 @@ invents risky work, never expands scope, and never touches the out-of-scope list
 - [x] **Gate the full broker HTTP smoke.** Today `verify:control-plane` only runs
   `smoke:broker-parse` (syntax). Add `smoke:broker` (or a dedicated CI job) so the
   live server boot is actually gated.
-- [ ] **Surface selection warnings in the dashboard.** Expose
+- [x] **Surface selection warnings in the dashboard.** Expose
   `SelectionResult.warnings` on `ProjectDashboardSnapshot` as a new optional field
   so operators see `selection_unresolved` / `selection_placeholder_skipped`. Update
   `dashboard-smoke`. Planner output must stay byte-for-byte.
