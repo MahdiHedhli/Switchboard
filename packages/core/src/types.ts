@@ -323,6 +323,15 @@ export interface ProjectStateSnapshot {
 export interface ProjectDashboardSnapshot extends ProjectStateSnapshot {
   plan: PlannerResult;
   providerSummaries: ProviderDashboardSummary[];
+  /**
+   * Selection-stage warnings surfaced from the selector. A SEPARATE union from
+   * PlannerWarning, so the planner's logic and output stay untouched. Lets
+   * operators see `selection_unresolved` / `selection_placeholder_skipped`
+   * routing hints directly on the dashboard. Optional for backward
+   * compatibility; `buildDashboardSnapshot` always populates it (an empty
+   * array when selection produced no warnings).
+   */
+  selectionWarnings?: SelectionWarning[];
 }
 
 export interface TaskSnapshot {

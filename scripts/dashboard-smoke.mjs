@@ -86,6 +86,10 @@ const snapshot = {
 
 const dashboard = buildDashboardSnapshot(snapshot);
 
+// Selection ran as a no-op here (tasks carry an explicit reservation or no
+// task-class), so the surfaced selection warnings are an empty array.
+assert.deepEqual(dashboard.selectionWarnings, []);
+
 assert.equal(dashboard.updatedAt, snapshot.updatedAt);
 assert.equal(dashboard.tasks.length, 2);
 assert.equal(dashboard.subscriptions.length, 1);
@@ -273,6 +277,8 @@ const mixedSnapshot = {
 
 const mixedDashboard = buildDashboardSnapshot(mixedSnapshot);
 
+assert.deepEqual(mixedDashboard.selectionWarnings, []);
+
 assert.deepEqual(mixedDashboard.providerSummaries, [
   {
     provider: 'openai',
@@ -365,6 +371,8 @@ const typedSnapshot = {
 
 const typedDashboard = buildDashboardSnapshot(typedSnapshot);
 
+assert.deepEqual(typedDashboard.selectionWarnings, []);
+
 assert.deepEqual(typedDashboard.providerSummaries, [
   {
     provider: 'openai',
@@ -396,5 +404,48 @@ assert.deepEqual(
 );
 assert.deepEqual(typedDashboard.plan.warnings, []);
 assert.equal(formatQuotaCoverageMessage(typedDashboard.subscriptions[0]?.quotas ?? []), null);
+
+// ---- selection warnings are surfaced on the dashboard ----------------------
+// A task declaring an unknown task-class makes the selector emit a
+// `selection_unresolved` warning. The dashboard must expose it via the new
+// optional `selectionWarnings` field, without the selector mutating the task
+// (so the planner still sees it byte-for-byte).
+const selectionWarningSnapshot = {
+  profile: {
+    id: 'threatpedia',
+    name: 'Threatpedia',
+    description: 'Dashboard smoke test project',
+    repos: [],
+    roles: [],
+  },
+  subscriptions: [],
+  tasks: [
+    {
+      id: 'TASK-GHOST-CLASS',
+      title: 'Task with an unknown task-class',
+      description: 'Selector should leave it unresolved and warn',
+      status: 'planned',
+      priority: 'p1',
+      role: 'operator',
+      createdAt: '2026-04-22T00:00:00.000Z',
+      updatedAt: '2026-04-22T00:00:00.000Z',
+      taskClass: 'ghost',
+    },
+  ],
+  updatedAt: '2026-04-22T03:00:00.000Z',
+};
+
+const selectionWarningDashboard = buildDashboardSnapshot(selectionWarningSnapshot);
+
+assert.deepEqual(selectionWarningDashboard.selectionWarnings, [
+  {
+    code: 'selection_unresolved',
+    taskId: 'TASK-GHOST-CLASS',
+    taskClass: 'ghost',
+    message: 'Task TASK-GHOST-CLASS declares unknown task-class "ghost"; left unresolved.',
+  },
+]);
+// The unresolved task is passed through untouched (no reservation injected).
+assert.equal(selectionWarningDashboard.tasks[0]?.reservations, undefined);
 
 console.log('Dashboard smoke test passed.');

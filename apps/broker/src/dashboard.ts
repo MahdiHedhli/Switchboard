@@ -45,5 +45,9 @@ export function buildDashboardSnapshot(
       tasks: selection.tasks,
     }),
     providerSummaries: buildProviderDashboardSummaries(snapshot.subscriptions),
+    // Surface selection-stage warnings for operators. This is purely additive:
+    // the planner above runs on selection.tasks exactly as before, so plan
+    // output stays byte-for-byte identical.
+    selectionWarnings: selection.warnings,
   };
 }
