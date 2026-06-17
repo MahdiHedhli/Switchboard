@@ -12,7 +12,7 @@ invents risky work, never expands scope, and never touches the out-of-scope list
 - [x] **Add GitHub Actions CI.** `.github/workflows/ci.yml` running `npm ci` then
   `npm run verify:control-plane` on pull_request and pushes to `main`. There is
   currently no CI. Done when the workflow is present and green on its own PR.
-- [ ] **Gate the full broker HTTP smoke.** Today `verify:control-plane` only runs
+- [x] **Gate the full broker HTTP smoke.** Today `verify:control-plane` only runs
   `smoke:broker-parse` (syntax). Add `smoke:broker` (or a dedicated CI job) so the
   live server boot is actually gated.
 - [ ] **Surface selection warnings in the dashboard.** Expose
