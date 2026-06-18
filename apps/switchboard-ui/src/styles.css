@@ -342,3 +342,39 @@ h4,
 p {
   margin-top: 0;
 }
+
+.catalog-panel {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.catalog-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.9rem;
+  min-width: 0;
+}
+
+.catalog-model {
+  word-break: break-word;
+}
+
+.catalog-tags {
+  margin: 0;
+}
+
+.catalog-active {
+  border-color: rgba(134, 239, 172, 0.4);
+  background: rgba(134, 239, 172, 0.12);
+  color: #86efac;
+}
+
+.catalog-placeholder {
+  border-color: rgba(251, 191, 36, 0.32);
+  background: rgba(251, 191, 36, 0.1);
+  color: #fcd34d;
+}

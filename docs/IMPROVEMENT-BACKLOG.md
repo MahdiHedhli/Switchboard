@@ -14,7 +14,7 @@ invents risky work, never expands scope, and never touches the out-of-scope list
 The dashboard UI must be feature-current, **smoke-tested, and UI/UX-tested before
 any human test pass.** Work these top-down; each is one PR.
 
-- [ ] **1. Surface model-selection results in the dashboard UI.** In
+- [x] **1. Surface model-selection results in the dashboard UI.** In
   `apps/switchboard-ui`, render the snapshot's `selectionWarnings`; show each
   reservation's `source` (selector / pin / explicit); show a task's `taskClass` and
   `modelPin`; add a read-only catalog panel (provider/modelId, tier,

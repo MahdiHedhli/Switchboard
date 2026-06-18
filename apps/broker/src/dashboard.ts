@@ -49,5 +49,13 @@ export function buildDashboardSnapshot(
     // the planner above runs on selection.tasks exactly as before, so plan
     // output stays byte-for-byte identical.
     selectionWarnings: selection.warnings,
+    // Surface the routable catalog (active + placeholder rows) read-only so the
+    // dashboard UI can show provider/modelId, tier, and active|placeholder
+    // status. Purely informational; selection above still routes only on
+    // `active` rows.
+    catalog: {
+      active: catalog?.active ?? [],
+      placeholders: catalog?.placeholders ?? [],
+    },
   };
 }
