@@ -332,6 +332,15 @@ export interface ProjectDashboardSnapshot extends ProjectStateSnapshot {
    * array when selection produced no warnings).
    */
   selectionWarnings?: SelectionWarning[];
+  /**
+   * Read-only view of the routable model catalog, surfaced so operators can see
+   * which models are `active` (routable) versus `placeholder` (excluded until an
+   * operator assigns a tier and sets status:active). Purely informational — the
+   * selector still routes only on `active` rows. Optional for backward
+   * compatibility; `buildDashboardSnapshot` always populates it (empty arrays
+   * when no catalog is wired).
+   */
+  catalog?: DashboardModelCatalog;
 }
 
 export interface TaskSnapshot {
@@ -438,6 +447,17 @@ export interface ModelCatalogEntry {
   authMode: AuthMode;
   pricing: ModelPricing;
   status: ModelCatalogStatus;
+}
+
+/**
+ * Read-only catalog view surfaced on the dashboard snapshot. `active` rows are
+ * fully-resolved and routable; `placeholders` are rows excluded from routing
+ * until an operator activates them. Mirrors the broker's routable catalog shape
+ * so the UI can render provider/modelId, tier, and active|placeholder status.
+ */
+export interface DashboardModelCatalog {
+  active: ModelCatalogEntry[];
+  placeholders: Array<{ provider: ProviderId; modelId: string }>;
 }
 
 /**
