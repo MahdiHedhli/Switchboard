@@ -19,7 +19,7 @@ invents risky work, never expands scope, and never touches the out-of-scope list
   `SelectionResult.warnings` on `ProjectDashboardSnapshot` as a new optional field
   so operators see `selection_unresolved` / `selection_placeholder_skipped`. Update
   `dashboard-smoke`. Planner output must stay byte-for-byte.
-- [ ] **Selector edge-case smokes.** Add cases: hybrid-pricing rows, scarcity tie at
+- [x] **Selector edge-case smokes.** Add cases: hybrid-pricing rows, scarcity tie at
   equal fill ratio, equal `effectiveCost` across different tiers (tie-break proof).
 - [ ] **README model-selection section.** A short section linking `docs/SELECTION.md`
   and `docs/QA-SMOKETEST.md`.
