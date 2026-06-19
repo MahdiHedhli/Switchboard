@@ -20,7 +20,7 @@ any human test pass.** Work these top-down; each is one PR.
   `modelPin`; add a read-only catalog panel (provider/modelId, tier,
   active|placeholder) from `/v1/projects/{id}/dashboard` + `/adapters`. Done when the
   UI renders all of these.
-- [ ] **2. Automated UI smoke test.** Add a UI test runner (vitest +
+- [x] **2. Automated UI smoke test.** Add a UI test runner (vitest +
   @testing-library/react + jsdom; commit the package.json/package-lock additions as
   part of this item). Render `<App/>` against a representative mocked dashboard
   payload and assert the core sections plus the selection fields from item 1 render
