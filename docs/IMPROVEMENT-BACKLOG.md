@@ -26,7 +26,7 @@ any human test pass.** Work these top-down; each is one PR.
   payload and assert the core sections plus the selection fields from item 1 render
   without error. Add `npm run test:ui` and wire it into `verify:control-plane` and CI.
   Done when `test:ui` is green and gated.
-- [ ] **3. UI/UX end-to-end test.** Add a headless Playwright e2e that boots the
+- [x] **3. UI/UX end-to-end test.** Add a headless Playwright e2e that boots the
   broker, serves the built UI, and walks the operator flow (load dashboard → see
   plan / providers / selection warnings → create a task → see it appear), plus an
   axe-core accessibility check on the main view. Add a CI job running it headless (no
