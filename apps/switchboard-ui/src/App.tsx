@@ -304,52 +304,55 @@ export function App() {
       </header>
 
       <section className="panel-grid">
-        <OperatorSessionPanel
-          authSummary={authSummary}
-          operatorTokenRequired={operatorTokenRequired}
-          brokerTlsEnabled={brokerTlsEnabled}
-          brokerTransportLabel={brokerTransportLabel}
-          operatorToken={operatorToken}
-          operatorTokenExpiresAt={operatorTokenExpiresAt}
-          operatorTokenRemembered={operatorTokenRemembered}
-          onTokenChange={updateOperatorToken}
-          onRememberedChange={updateOperatorTokenRemembered}
-        />
+        <div className="panel-col">
+          <OperatorSessionPanel
+            authSummary={authSummary}
+            operatorTokenRequired={operatorTokenRequired}
+            brokerTlsEnabled={brokerTlsEnabled}
+            brokerTransportLabel={brokerTransportLabel}
+            operatorToken={operatorToken}
+            operatorTokenExpiresAt={operatorTokenExpiresAt}
+            operatorTokenRemembered={operatorTokenRemembered}
+            onTokenChange={updateOperatorToken}
+            onRememberedChange={updateOperatorTokenRemembered}
+          />
+          <PlanningNotesPanel
+            warnings={warnings}
+            refreshMessage={refreshMessage}
+            refreshMessageAdvisory={refreshMessageAdvisory}
+            loadError={loadError}
+            mutationError={mutationError}
+          />
+        </div>
 
-        <QuotaRefreshPanel
-          adapterStatuses={adapterStatuses}
-          providerSummaries={providerSummaries}
-          isLoading={isLoading}
-          refreshingProvider={refreshingProvider}
-          canRefreshSubscriptions={canRefreshSubscriptions}
-          onRefreshProvider={(provider) => void handleRefreshProvider(provider)}
-        />
+        <div className="panel-col">
+          <TaskIntakePanel
+            createTaskForm={createTaskForm}
+            setCreateTaskForm={setCreateTaskForm}
+            roleOptions={roleOptions}
+            isCreatingTask={isCreatingTask}
+            isLoading={isLoading}
+            canCreateTasks={canCreateTasks}
+            onSubmit={(event) => void handleCreateTask(event)}
+          />
+          <ModelAvailabilityPanel subscriptions={subscriptions} isLoading={isLoading} />
+        </div>
 
-        <TaskIntakePanel
-          createTaskForm={createTaskForm}
-          setCreateTaskForm={setCreateTaskForm}
-          roleOptions={roleOptions}
-          isCreatingTask={isCreatingTask}
-          isLoading={isLoading}
-          canCreateTasks={canCreateTasks}
-          onSubmit={(event) => void handleCreateTask(event)}
-        />
-
-        <ModelAvailabilityPanel subscriptions={subscriptions} isLoading={isLoading} />
-
-        <PlanningNotesPanel
-          warnings={warnings}
-          refreshMessage={refreshMessage}
-          refreshMessageAdvisory={refreshMessageAdvisory}
-          loadError={loadError}
-          mutationError={mutationError}
-        />
-
-        <ModelSelectionPanel
-          isLoading={isLoading}
-          selectionWarnings={selectionWarnings}
-          modelCatalog={modelCatalog}
-        />
+        <div className="panel-col">
+          <QuotaRefreshPanel
+            adapterStatuses={adapterStatuses}
+            providerSummaries={providerSummaries}
+            isLoading={isLoading}
+            refreshingProvider={refreshingProvider}
+            canRefreshSubscriptions={canRefreshSubscriptions}
+            onRefreshProvider={(provider) => void handleRefreshProvider(provider)}
+          />
+          <ModelSelectionPanel
+            isLoading={isLoading}
+            selectionWarnings={selectionWarnings}
+            modelCatalog={modelCatalog}
+          />
+        </div>
       </section>
 
       <SwitchboardLanes
