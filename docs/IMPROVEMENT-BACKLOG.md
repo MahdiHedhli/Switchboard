@@ -42,7 +42,7 @@ any human test pass.** Work these top-down; each is one PR.
 
 ### Other
 
-- [ ] **README model-selection section.** A short section linking `docs/SELECTION.md`
+- [x] **README model-selection section.** A short section linking `docs/SELECTION.md`
   and `docs/QA-SMOKETEST.md`.
 
 ## Completed

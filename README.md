@@ -79,6 +79,33 @@ The first version focuses on:
 - remaining subscription capacity when known
 - planning warnings when quota data is unknown or low
 
+## Model selection
+
+Switchboard resolves *who should do a task* in a discrete **selector** stage that
+runs before the planner: a task's declared *task-class* (or an explicit pin)
+resolves to a concrete model reservation, and the planner then validates that
+reservation against live quota. The selector always picks the **cheapest model
+that clears the task-class capability floor**, so the floor — not the price — is
+the quality guarantee.
+
+- coarse, hand-assigned capability tiers (`heavy` / `standard` / `light`) gate
+  which models may serve a task-class
+- cost-basis policies (`subscription-first`, and the default
+  `subscription-first-scarcity-preserving`) prefer marginal-cost-0 subscription
+  models while progressively deprioritising a near-exhausted premium subscription
+- selection warnings are surfaced separately from planner warnings on the
+  dashboard snapshot
+- routing is **dormant by default**: the shipped catalog is all-placeholder, so
+  nothing routes until an operator activates a catalog row
+
+Lowering a judgment-heavy floor (e.g. `attribution`) is treated as a
+corpus-integrity risk, not a cost optimization, and is refused by default.
+
+See [`docs/SELECTION.md`](docs/SELECTION.md) for the full selection model — tiers,
+cost-basis policies, the candidate filter, per-task precedence, and the
+corpus-integrity guardrail — and [`docs/QA-SMOKETEST.md`](docs/QA-SMOKETEST.md)
+for the QA/smoketest runbook that verifies it.
+
 ## Status
 
 This repository is still early, but it is no longer scaffold-only. The local broker, seed persistence, and broker-fed UI path are now working, and the repo has a documented production plan in `docs/PRODUCTION-PLAN.md`.
