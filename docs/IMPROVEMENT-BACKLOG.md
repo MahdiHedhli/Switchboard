@@ -26,15 +26,15 @@ any human test pass.** Work these top-down; each is one PR.
   payload and assert the core sections plus the selection fields from item 1 render
   without error. Add `npm run test:ui` and wire it into `verify:control-plane` and CI.
   Done when `test:ui` is green and gated.
-- [ ] **3. UI/UX end-to-end test.** Add a headless Playwright e2e that boots the
-  broker, serves the built UI, and walks the operator flow (load dashboard → see
-  plan / providers / selection warnings → create a task → see it appear), plus an
-  axe-core accessibility check on the main view. Add a CI job running it headless (no
-  desktop browser required). Done when the e2e + a11y checks pass in CI.
-- [ ] **4. UI/UX review pass.** Capture findings in `docs/UI-UX-REVIEW.md` —
-  layout/responsive at common widths, keyboard/focus order, color contrast, and
-  empty/error/loading states — and fix mechanical issues; escalate anything needing
-  product/visual judgment. Done when the doc exists and mechanical fixes are merged.
+- [x] **3. UI/UX end-to-end test.** Headless Playwright e2e (`apps/switchboard-ui/e2e/`)
+  boots the broker + dev server and walks the operator flow (load dashboard → see
+  plan / providers / selection → token-gated create a task → see it appear), plus an
+  `@axe-core/playwright` WCAG A/AA check on the main view. New `ui-e2e` CI job runs it
+  headless (`npx playwright install --with-deps chromium` → `npm run e2e:ui`).
+- [x] **4. UI/UX review pass.** `docs/UI-UX-REVIEW.md` captures the functional usage
+  test + UX findings; mechanical fixes merged via the redesign (focus-visible rings,
+  AA contrast for `--text-dim`, balanced layout, kanban lanes). The axe e2e enforces
+  the contrast/label findings going forward.
 
 > **Human-test gate:** the dashboard is NOT human-test-ready until items 1–4 are all
 > checked and green in CI. The hands-on human pass is the operator's; the loop never
@@ -42,8 +42,8 @@ any human test pass.** Work these top-down; each is one PR.
 
 ### Other
 
-- [ ] **README model-selection section.** A short section linking `docs/SELECTION.md`
-  and `docs/QA-SMOKETEST.md`.
+- [x] **README model-selection section.** A short "Model selection" section linking
+  `docs/SELECTION.md` and `docs/QA-SMOKETEST.md`.
 
 ## Completed
 

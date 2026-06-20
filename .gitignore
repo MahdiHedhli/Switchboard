@@ -18,6 +18,12 @@ id_rsa*
 *_rsa
 credentials.json
 
+# --- Playwright e2e artifacts ---
+apps/switchboard-ui/playwright-report/
+apps/switchboard-ui/test-results/
+apps/switchboard-ui/.playwright/
+playwright/.cache/
+
 # --- macOS / editor artifacts ---
 .DS_Store?
 ._*

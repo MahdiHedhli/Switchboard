@@ -16,6 +16,20 @@ It provides:
 - reusable project profiles that can adapt the same control plane to multiple repos and workflows
 - a planning model that can account for model availability, subscription limits, and reserved usage before execution starts
 
+## Model selection
+
+A cost-aware **selector** runs as a discrete stage before the planner: it turns each
+task's declared *task-class* (or an explicit pin) into a concrete model reservation —
+the cheapest capable model that clears the class's tier floor and is currently
+available. Because unavailable models simply drop out of the candidate set, failover
+is subsumed by selection (no separate fallback path). Two hard lines are enforced: the
+catalog never routes on fabricated tier/cost numbers (placeholder rows stay
+non-routable), and judgment-heavy classes such as `attribution` never drop below the
+`heavy` tier.
+
+- Design and the corpus-integrity guardrail: [docs/SELECTION.md](docs/SELECTION.md)
+- QA / smoke-test runbook: [docs/QA-SMOKETEST.md](docs/QA-SMOKETEST.md)
+
 ## Initial direction
 
 The first milestone is a reusable local scaffold with three major surfaces:
