@@ -31,7 +31,7 @@ any human test pass.** Work these top-down; each is one PR.
   plan / providers / selection warnings → create a task → see it appear), plus an
   axe-core accessibility check on the main view. Add a CI job running it headless (no
   desktop browser required). Done when the e2e + a11y checks pass in CI.
-- [ ] **4. UI/UX review pass.** Capture findings in `docs/UI-UX-REVIEW.md` —
+- [x] **4. UI/UX review pass.** Capture findings in `docs/UI-UX-REVIEW.md` —
   layout/responsive at common widths, keyboard/focus order, color contrast, and
   empty/error/loading states — and fix mechanical issues; escalate anything needing
   product/visual judgment. Done when the doc exists and mechanical fixes are merged.

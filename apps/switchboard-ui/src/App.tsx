@@ -691,7 +691,7 @@ export function App() {
   }
 
   return (
-    <main className="page">
+    <main className="page" aria-busy={isLoading}>
       <header className="hero">
         <div>
           <h1>Switchboard</h1>
@@ -1086,9 +1086,9 @@ export function App() {
               ))}
             </div>
           ) : null}
-          {refreshMessage ? <p className={refreshMessageAdvisory ? 'warning-text' : 'success-text'}>{refreshMessage}</p> : null}
-          {loadError ? <p className="error-text">Broker load error: {loadError}</p> : null}
-          {mutationError ? <p className="error-text">Broker mutation error: {mutationError}</p> : null}
+          {refreshMessage ? <p className={refreshMessageAdvisory ? 'warning-text' : 'success-text'} role="status" aria-live="polite">{refreshMessage}</p> : null}
+          {loadError ? <p className="error-text" role="alert">Broker load error: {loadError}</p> : null}
+          {mutationError ? <p className="error-text" role="alert">Broker mutation error: {mutationError}</p> : null}
         </section>
 
         <section className="panel">
