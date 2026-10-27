@@ -4,7 +4,7 @@ The twice-daily improvement loop (6am/6pm ET) reads this file, implements the
 **top unchecked in-scope item** per run through the standard gate
 (`verify:control-plane` green → branch → PR → squash-merge), and checks it off in
 the same PR. When every item is checked — or the only ones left need operator
-judgment — it escalates "backlog dry" via ntfy `Mahdi-Dev` and stops. It never
+judgment — it escalates "backlog dry" via ntfy `<private-notification-topic>` and stops. It never
 invents risky work, never expands scope, and never touches the out-of-scope list.
 
 ## In-scope queue (top = next)
